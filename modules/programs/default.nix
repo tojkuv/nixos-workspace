@@ -201,7 +201,6 @@ in
     # Core development environment
     EDITOR = "nvim";
     VISUAL = "nvim";
-    BROWSER = "firefox";
     PAGER = "bat";
     
     # Programming language configurations

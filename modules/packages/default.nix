@@ -60,8 +60,20 @@ in
   environment.systemPackages = with pkgs; [
     # non-development applications
     steam
+    prismlauncher
+    modrinth-app
+    gearlever
     waydroid
 
+    ## audio synthesis
+    # supercollider
+    # libjack2
+    # libsndfile
+    # fftw
+    # avahi
+    # alsa-lib
+    # ncurses
+    # libudev-zero
 
     # ===== ESSENTIAL SYSTEM TOOLS =====
     vim neovim
@@ -84,6 +96,7 @@ in
     gnupg
     openssh
     openssl
+    wireguard-tools
 
     # System administration
     systemctl-tui
@@ -327,6 +340,9 @@ in
 
     # Archive tools
     p7zip              # 7-Zip archiver
+
+    # Image manipulation
+    imagemagick        # ImageMagick CLI tools
 
     # File utilities
     rsync              # File synchronization

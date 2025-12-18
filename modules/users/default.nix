@@ -20,7 +20,7 @@
         # Add your SSH keys here for automation
       ];
       
-      hashedPassword = "$6$h/mWSrAzrdzXRgjV$w.EpkrSlFL3bQ61dqyZWFHaXJMYrnbPB6W1QO8ClkXhe4j2O2MCrBWU7KZl9PD.BYlA2VivyzCLkoFM6XYQ6c.";
+       hashedPassword = "$6$BaLzSjEpHY5o1U8b$kyjm0KGrKdal4MnYmqIhWkxrl7xI6W0dEy9oKMs1JcSaYv9TtQKzFBl0Q2xluyrW/ls1jolLGZz/xmmk8HlIH.";
     };
   };
 }
