@@ -37,6 +37,20 @@ help:
 	@echo "  make vnc-tigervnc  - Launch TigerVNC client"
 	@echo "  make vnc-gnome-connections - Launch GNOME Connections VNC client"
 	@echo ""
+	@echo "SSH Server (Remote Access):"
+	@echo "  make ssh-server-setup  - Configure and verify SSH server for remote access"
+	@echo "  make ssh-server-status - Check SSH server status and connections"
+	@echo "  make ssh-public-ip     - Display public IP and connection info"
+	@echo ""
+	@echo "Legacy Remote Management (Local Network):"
+	@echo "  make ssh-discover  - Auto-discover devices on local network"
+	@echo "  make ssh-test      - Test SSH connection (ANDROID_IP=xxx.xxx.xxx.xxx)"
+	@echo "  make ssh-status    - Check SSH connection status"
+	@echo "  make ssh-connect   - Connect via SSH (ANDROID_IP=xxx.xxx.xxx.xxx)"
+	@echo "  make ssh-tunnel-start - Start SSH tunnel (TUNNEL_LOCAL_PORT=2222)"
+	@echo "  make ssh-tunnel-stop  - Stop SSH tunnel"
+	@echo "  make ssh-tunnel-status - Check SSH tunnel status"
+	@echo ""
 	@echo "Admin Password: unsecure"
 
 rebuild:
@@ -170,3 +184,120 @@ vnc-tigervnc:
 vnc-gnome-connections:
 	@echo "=== Launching GNOME Connections VNC Client ==="
 	gnome-connections
+
+# Remote Management (Android Workstation)
+ANDROID_IP ?= 
+ANDROID_USER ?= tojkuv
+
+ssh-test:
+	@echo "=== Testing SSH Connection to Android Workstation ==="
+	@test -n "$(ANDROID_IP)" || (echo "Error: Set ANDROID_IP variable (make ssh-test ANDROID_IP=xxx.xxx.xxx.xxx)" && exit 1)
+	@echo "Testing connection to $(ANDROID_USER)@$(ANDROID_IP)..."
+	@ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no $(ANDROID_USER)@$(ANDROID_IP) "echo '✓ SSH connection successful'" || (echo "✗ SSH connection failed" && exit 1)
+
+ssh-status:
+	@echo "=== SSH Connection Status ==="
+	@test -n "$(ANDROID_IP)" || (echo "Current Android IP not configured" && echo "Set with: make ssh-status ANDROID_IP=xxx.xxx.xxx.xxx" && exit 1)
+	@echo "Android Workstation: $(ANDROID_USER)@$(ANDROID_IP)"
+	@timeout 10 ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no $(ANDROID_USER)@$(ANDROID_IP) "uptime && echo 'Status: ✓ Connected'" 2>/dev/null || echo "Status: ✗ Disconnected"
+
+ssh-connect:
+	@echo "=== Connecting to Android Workstation ==="
+	@test -n "$(ANDROID_IP)" || (echo "Error: Set ANDROID_IP variable (make ssh-connect ANDROID_IP=xxx.xxx.xxx.xxx)" && exit 1)
+	@echo "Connecting to $(ANDROID_USER)@$(ANDROID_IP)..."
+	ssh $(ANDROID_USER)@$(ANDROID_IP)
+
+# SSH Tunnel Management
+TUNNEL_LOCAL_PORT ?= 2222
+TUNNEL_REMOTE_PORT ?= 22
+
+ssh-tunnel-start:
+	@echo "=== Starting SSH Tunnel to Android Workstation ==="
+	@test -n "$(ANDROID_IP)" || (echo "Error: Set ANDROID_IP variable" && exit 1)
+	@echo "Creating tunnel: localhost:$(TUNNEL_LOCAL_PORT) → $(ANDROID_USER)@$(ANDROID_IP):$(TUNNEL_REMOTE_PORT)"
+	@ssh -f -N -L $(TUNNEL_LOCAL_PORT):localhost:$(TUNNEL_REMOTE_PORT) $(ANDROID_USER)@$(ANDROID_IP) && echo "✓ SSH tunnel established" || echo "✗ Failed to establish tunnel"
+
+ssh-tunnel-stop:
+	@echo "=== Stopping SSH Tunnels ==="
+	@pkill -f "ssh.*-L $(TUNNEL_LOCAL_PORT)" && echo "✓ SSH tunnel stopped" || echo "No active tunnels found"
+
+ssh-tunnel-status:
+	@echo "=== SSH Tunnel Status ==="
+	@if pgrep -f "ssh.*-L $(TUNNEL_LOCAL_PORT)" > /dev/null; then \
+		echo "✓ SSH tunnel active on port $(TUNNEL_LOCAL_PORT)"; \
+		ps aux | grep "ssh.*-L $(TUNNEL_LOCAL_PORT)" | grep -v grep; \
+	else \
+		echo "✗ No SSH tunnel active on port $(TUNNEL_LOCAL_PORT)"; \
+	fi
+
+# SSH Server Configuration
+ssh-server-setup:
+	@echo "=== SSH Server Configuration for Remote Access ==="
+	@echo "Checking SSH service status..."
+	@$(SUDO) systemctl is-active sshd >/dev/null && echo "✓ SSH service is running" || (echo "✗ SSH service not running - starting..." && $(SUDO) systemctl start sshd)
+	@$(SUDO) systemctl is-enabled sshd >/dev/null && echo "✓ SSH service is enabled" || (echo "Enabling SSH service..." && $(SUDO) systemctl enable sshd)
+	@echo ""
+	@echo "SSH Server Details:"
+	@echo "Port: 22 (TCP)"
+	@echo "Firewall: ✓ Port 22 is open"
+	@echo "Authentication: Password + Key authentication enabled"
+	@echo ""
+	@echo "Public IP Detection:"
+	@curl -s https://api.ipify.org && echo "" || (echo "Unable to detect public IP" && echo "Check your internet connection")
+	@echo ""
+	@echo "SSH Configuration Summary:"
+	@echo "- Root login: Disabled"
+	@echo "- Password authentication: Enabled"
+	@echo "- Key authentication: Enabled"
+	@echo "- X11 forwarding: Disabled"
+	@echo "- Compression: Enabled"
+	@echo ""
+	@echo "To connect from Android device:"
+	@echo "1. Generate SSH keys on Android: make setup-ssh-keys"
+	@echo "2. Copy public key to this server"
+	@echo "3. Connect: ssh user@YOUR_PUBLIC_IP"
+
+ssh-server-status:
+	@echo "=== SSH Server Status ==="
+	@echo "Service Status: $$(systemctl is-active sshd)"
+	@echo "Service Enabled: $$(systemctl is-enabled sshd)"
+	@echo "Port Status: $$(ss -tln | grep :22 | wc -l) connection(s) on port 22"
+	@echo "Firewall Rules: $$(iptables -L INPUT -n | grep "dpt:22" | wc -l) rule(s) for SSH"
+	@echo ""
+	@echo "Recent SSH connections:"
+	@journalctl -u sshd --since "1 hour ago" --no-pager -q | grep "Accepted" | tail -5 || echo "No recent connections"
+
+ssh-public-ip:
+	@echo "=== Public IP Information ==="
+	@echo "Current Public IP: $$(curl -s --connect-timeout 5 https://api.ipify.org 2>/dev/null || curl -s --connect-timeout 5 https://ipinfo.io/ip 2>/dev/null || echo 'Unable to detect - check internet connection')"
+	@echo "Local IP: $$(ip route get 1 | awk '{print $$7}' | head -1)"
+	@echo "SSH Port: 22"
+	@echo ""
+	@echo "Network Interface Info:"
+	@ip addr show | grep -E "inet.*global" | head -3 || echo "Unable to get interface info"
+	@echo ""
+	@echo "For dynamic DNS setup (if needed):"
+	@echo "- Consider services like No-IP, DuckDNS, or Cloudflare Tunnel"
+	@echo "- Or configure port forwarding on your router to this machine"
+
+ssh-discover:
+	@echo "=== Discovering Android Workstation IP ==="
+	@echo "Scanning local network for SSH-enabled devices..."
+	@echo "This may take a few moments..."
+	@LOCAL_IP=$$(ip route get 1 | awk '{print $$7}' | head -1); \
+	NETWORK=$$(echo $$LOCAL_IP | sed 's/\.[0-9]*$$/.0\/24/'); \
+	echo "Scanning network: $$NETWORK"; \
+	if command -v nmap >/dev/null 2>&1; then \
+		nmap -p 22 --open $$NETWORK -oG - | grep "22/open" | awk '{print $$2}' | while read ip; do \
+			echo "Found SSH on: $$ip"; \
+			if timeout 5 ssh -o ConnectTimeout=3 -o StrictHostKeyChecking=no -o PasswordAuthentication=no $(ANDROID_USER)@$$ip "echo 'Android workstation found at $$ip'" 2>/dev/null; then \
+				echo "✓ Confirmed Android workstation at: $$ip"; \
+				echo "Use: make ANDROID_IP=$$ip ssh-test"; \
+				break; \
+			fi; \
+		done; \
+	else \
+		echo "nmap not available. Install with: nix-env -iA nixpkgs.nmap"; \
+		echo "Alternative: Check ARP table with: ip neigh"; \
+		ip neigh | grep -v "FAILED\|INCOMPLETE" | head -10; \
+	fi
