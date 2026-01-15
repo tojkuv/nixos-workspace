@@ -61,7 +61,20 @@ in
     # non-development applications
     steam
     prismlauncher
-    modrinth-app
+    gamemode
+    mangohud
+    (pkgs.runCommand "modrinth-app-amd" {
+      buildInputs = [ pkgs.makeWrapper ];
+    } ''
+      mkdir -p $out/bin
+      makeWrapper ${pkgs.modrinth-app}/bin/ModrinthApp $out/bin/ModrinthApp \
+        --set __GLX_VENDOR_LIBRARY_NAME mesa \
+        --set __NV_PRIME_RENDER_OFFLOAD 0 \
+        --set DRI_PRIME 1 \
+        --set VK_ICD_FILENAMES /run/opengl-driver/share/vulkan/icd.d/radeon_icd.x86_64.json \
+        --set GDK_BACKEND x11
+    '')
+    blockbench
     gearlever
     waydroid
 
@@ -98,9 +111,17 @@ in
     openssl
     wireguard-tools
 
-    # System administration
-    systemctl-tui
-    nixos-rebuild
+     # System administration
+     systemctl-tui
+     nixos-rebuild
+
+     # Graphics debugging tools
+     mesa-demos
+     vulkan-tools
+
+     # GPU monitoring tools
+     nvtopPackages.full       # GPU monitor for NVIDIA/AMD/Intel
+     btop                     # System monitor with GPU support
 
     # Container runtime (system-level) - Podman for better NixOS integration
     podman
@@ -157,15 +178,18 @@ in
     android-studio                # Android Studio IDE with SDK
     android-studio-tools          # Android platform tools (adb, fastboot, etc.)
 
-    # X11 libraries for Android emulator
-    xorg.libX11
-    xorg.libXext
-    xorg.libXrender
-    xorg.libXrandr
-    xorg.libXi
-    xorg.libXcursor
-    xorg.libXfixes
-    libpulseaudio
+     # X11 libraries for Android emulator
+     xorg.libX11
+     xorg.libXext
+     xorg.libXrender
+     xorg.libXrandr
+     xorg.libXi
+     xorg.libXcursor
+     xorg.libXfixes
+     libpulseaudio
+
+     # Wayland input library
+     libxkbcommon
 
     # Go development
     go                         # Go programming language
@@ -316,9 +340,10 @@ in
     tmux               # Terminal multiplexer
     starship           # Shell prompt
 
-    # ===== BUILD TOOLS =====
-    gnumake            # Universal build tool
-    just               # Modern command runner
+     # ===== BUILD TOOLS =====
+     gnumake            # Universal build tool
+     buck2              # High-performance build system
+     just               # Modern command runner
     buf                # Protocol buffer toolkit
     protobuf           # Protocol buffer compiler
     protoc-gen-go      # Go protobuf plugin
@@ -411,12 +436,15 @@ in
        xorg.libXcursor
        xorg.libXfixes
        xorg.libXtst
-       xorg.libXdamage
-       xorg.libxcb
-       xorg.libXcomposite
-       libpulseaudio
-       mesa
-       libGL
+        xorg.libXdamage
+        xorg.libxcb
+        xorg.libXcomposite
+        libpulseaudio
+        mesa
+        libGL
+
+        # Wayland input library for Bevy games
+        libxkbcommon
 
        # Additional C runtime libraries for development tools
        libffi
