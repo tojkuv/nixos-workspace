@@ -51,12 +51,9 @@
       { domain = "*"; type = "hard"; item = "memlock"; value = "unlimited"; }
     ];
     
-    # SSL/TLS Certificate Authority configuration
-    pki = {
-      certificateFiles = [
-        "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
-      ];
-    };
+     # SSL/TLS Certificate Authority configuration
+     # Note: Modern NixOS handles certificates automatically through NSS and p11-kit
+     # No manual certificateFiles configuration needed
     
     # Enable user namespaces for better container and development flexibility
     allowUserNamespaces = true;
@@ -83,17 +80,26 @@
     })
   ];
   
-  # System-level environment variables to prevent CLI usage
-  environment.variables = {
-    # Prevent common CLI password managers from being used
-    BITWARDEN_CLI_DISABLED = "true";
-    PASSWORD_STORE_DISABLED = "true";
-    GOPASS_DISABLED = "true";
-    ENTERPRISE_SECURITY_POLICY = "CLI_PASSWORD_MANAGERS_DISABLED";
-  };
+   # System-level environment variables to prevent CLI usage and fix SSL certificates
+   environment.variables = {
+     # Prevent common CLI password managers from being used
+     BITWARDEN_CLI_DISABLED = "true";
+     PASSWORD_STORE_DISABLED = "true";
+     GOPASS_DISABLED = "true";
+     ENTERPRISE_SECURITY_POLICY = "CLI_PASSWORD_MANAGERS_DISABLED";
+
+     # Fix SSL certificate validation by setting the certificate file path
+     SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
+     CURL_CA_BUNDLE = "/etc/ssl/certs/ca-bundle.crt";
+   };
   
   # Add security notice to shell profiles
   environment.interactiveShellInit = ''
+    # Ensure SSL certificate environment variables are loaded
+    if [ -z "$SSL_CERT_FILE" ]; then
+      . /etc/set-environment
+    fi
+
     # Security notice function for blocked commands
     _security_block_notice() {
       echo "🔒 SECURITY POLICY: CLI password managers are disabled for enterprise security compliance."

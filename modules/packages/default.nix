@@ -135,8 +135,9 @@ in
      glibc
      libffi.dev
 
-    # SSL/TLS Certificate management
-    cacert
+     # SSL/TLS Certificate management
+     cacert
+     p11-kit
 
     # Windows Server Management Tools
     powershell                             # PowerShell Core for Windows remote management

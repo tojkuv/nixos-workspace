@@ -53,8 +53,8 @@ in
 
         peers = [
           {
-            # Phone client
-            publicKey = "d6zuPjGtX8iJhgMhuruI4XtEFygqfA1HRGZABpNIBgs=";
+            # Android client
+            publicKey = "avMBqSWyzXv3iY46OtE1rgHGJVsxl3rnB4PFCpNhwD0=";
             allowedIPs = [ "10.0.0.2/32" ];
           }
         ];
