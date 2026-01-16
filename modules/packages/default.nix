@@ -302,9 +302,10 @@ in
     vscode              # Visual Studio Code
     zed-editor          # Modern collaborative editor
 
-    # ===== WEB BROWSERS =====
-    firefox             # Privacy-focused browser
-    microsoft-edge      # Professional browser
+     # ===== WEB BROWSERS =====
+     chromium            # Open-source browser (default)
+     firefox             # Privacy-focused browser
+     microsoft-edge      # Professional browser
 
     # ===== USER APPLICATIONS =====
     zoom-us
