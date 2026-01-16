@@ -1,3 +1,0 @@
-Test link: https://github.com
-
-This is a test file with a link to verify browser integration.
