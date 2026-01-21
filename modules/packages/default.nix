@@ -243,6 +243,19 @@ in
     lldb                      # LLVM Debugger
     pkg-config               # Build system helper for library detection
 
+    # System libraries for C/C++/Rust linking
+    zlib                      # Compression library (libz.so.1)
+    xz                        # XZ compression library
+    bzip2                     # Bzip2 compression library
+    openssl                   # SSL/TLS library
+    libffi                    # Foreign function interface library
+    xorg.libX11               # X11 library
+    xorg.libXcursor           # X11 cursor library
+    xorg.libXi                # X11 input extension
+    xorg.libXrandr            # X11 randr extension
+    libxkbcommon             # Keyboard input library for Wayland/X11
+    wayland                   # Wayland protocol library
+
     # ===== .NET 9 DEVELOPMENT ENVIRONMENT =====
     dotnet-sdk_9                           # Complete .NET 9 SDK with build tools, MSBuild, and NuGet
     dotnet-aspnetcore_9                    # ASP.NET Core 9 runtime for web applications
