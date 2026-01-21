@@ -84,19 +84,6 @@
       dnssec = "false";  # Disable DNSSEC for development
       domains = [ "~." ];
       fallbackDns = [ "1.1.1.1" "8.8.8.8" "8.8.4.4" ];
-      extraConfig = ''
-        DNS=1.1.1.1 8.8.8.8 8.8.4.4
-        DNSStubListener=yes
-        DNSStubListenerExtra=172.17.0.1:53
-        DNSOverTLS=false
-        MulticastDNS=true
-        LLMNR=true
-        Cache=yes
-        CacheFromLocalhost=no
-        ReadEtcHosts=yes
-        ResolveUnicastSingleLabel=no
-        StaleRetentionSec=0
-      '';
     };
   };
 }

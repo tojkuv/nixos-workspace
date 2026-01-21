@@ -21,7 +21,7 @@
       liberation_ttf
       noto-fonts
       noto-fonts-cjk-sans
-      noto-fonts-emoji
+      noto-fonts-color-emoji
       
       # Professional presentation fonts
       source-sans-pro

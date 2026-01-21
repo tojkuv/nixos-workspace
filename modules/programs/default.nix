@@ -217,6 +217,11 @@ in
     
     # Rust development
     CARGO_HOME = "$HOME/.cargo";
+
+    # Vulkan graphics for gaming and 3D applications (use NVIDIA with PRIME)
+    VK_ICD_FILENAMES = "/run/opengl-driver/share/vulkan/icd.d/nvidia_icd.x86_64.json";
+    __NV_PRIME_RENDER_OFFLOAD = "1";
+    __GLX_VENDOR_LIBRARY_NAME = "nvidia";
     
     # Container environment
     DOCKER_BUILDKIT = "1";
@@ -307,7 +312,6 @@ in
   '';
 
   # Android development configuration
-  programs.adb.enable = true;
   
   # Android SDK directory setup
   system.activationScripts.androidSdk = ''

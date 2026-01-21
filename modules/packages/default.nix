@@ -4,6 +4,9 @@
 { config, pkgs, lib, ... }:
 
 let
+  # Use standard Rust from nixpkgs
+  rustToolchain = pkgs.rustc;
+
   # ===== PYTHON DEVELOPMENT ENVIRONMENT =====
   pythonEnv = pkgs.python312.withPackages (ps: with ps; [
     # Web frameworks and API development
@@ -53,6 +56,14 @@ let
     anthropic
     langchain
     langchain-community
+
+    # Dataset libraries
+    datasets
+
+    # Deep learning frameworks
+    torch
+    torchvision
+    torchaudio
   ]);
 in
 
@@ -86,7 +97,7 @@ in
     # avahi
     # alsa-lib
     # ncurses
-    # libudev-zero
+     udev.dev
 
     # ===== ESSENTIAL SYSTEM TOOLS =====
     vim neovim
@@ -178,6 +189,7 @@ in
     # Android development
     android-studio                # Android Studio IDE with SDK
     android-studio-tools          # Android platform tools (adb, fastboot, etc.)
+    android-tools                 # Android platform tools (adb, fastboot, etc.)
 
      # X11 libraries for Android emulator
      xorg.libX11
@@ -189,8 +201,19 @@ in
      xorg.libXfixes
      libpulseaudio
 
-     # Wayland input library
-     libxkbcommon
+          # Wayland and audio development libraries for Bevy games
+          wayland
+          wayland-protocols
+          libxkbcommon
+           alsa-lib.dev
+          xorg.xkbcomp
+          xorg.setxkbmap
+          xorg.libxcb
+          xorg.libX11
+          xorg.libXext
+         xorg.libXrandr
+         xorg.libXi
+         xorg.libXcursor
 
     # Go development
     go                         # Go programming language
@@ -218,6 +241,7 @@ in
     ninja                     # Build system
     gdb                       # GNU Debugger
     lldb                      # LLVM Debugger
+    pkg-config               # Build system helper for library detection
 
     # ===== .NET 9 DEVELOPMENT ENVIRONMENT =====
     dotnet-sdk_9                           # Complete .NET 9 SDK with build tools, MSBuild, and NuGet
@@ -381,6 +405,7 @@ in
     # ===== DOCUMENTATION AND WRITING =====
     pandoc             # Document converter
     hugo               # Static site generator
+    texlive.combined.scheme-full  # LaTeX distribution for professional typesetting
 
     # ===== VIRTUALIZATION TOOLS =====
     quickemu           # Quick VM management
@@ -442,13 +467,27 @@ in
         xorg.libxcb
         xorg.libXcomposite
         libpulseaudio
-        mesa
-        libGL
+         mesa
+         libGL
+         vulkan-loader
+         vulkan-tools
+         vulkan-validation-layers
 
-        # Wayland input library for Bevy games
-        libxkbcommon
+         # Wayland input library for Bevy games
+         libxkbcommon
 
-       # Additional C runtime libraries for development tools
+          # XKB keyboard input libraries for Bevy
+          libxkbcommon
+          xorg.libxcb
+          xorg.libX11
+          xorg.libXext
+          xorg.libXrandr
+          xorg.libXi
+          xorg.libXcursor
+          xorg.xkbcomp
+          xorg.setxkbmap
+
+        # Additional C runtime libraries for development tools
        libffi
        libedit
        libjpeg

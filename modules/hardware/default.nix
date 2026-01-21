@@ -10,9 +10,8 @@
       enable32Bit = true;
 
       extraPackages = with pkgs; [
-        amdvlk
         mesa
-        vaapiVdpau
+        libva-vdpau-driver
         libvdpau-va-gl
       ] ++ lib.optionals (config.services.xserver.videoDrivers or [] == [ "nvidia" ]) [
         nvidia-vaapi-driver
