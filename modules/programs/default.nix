@@ -244,7 +244,7 @@ in
     DEV_ENV = "dev-unstable";
     
     # Library path for native binaries (claude-code, etc.)
-    LD_LIBRARY_PATH = "${pkgs.stdenv.cc.cc.lib}/lib:${pkgs.gcc.cc.lib}/lib";
+    LD_LIBRARY_PATH = "${pkgs.stdenv.cc.cc.lib}/lib:${pkgs.gcc.cc.lib}/lib:${pkgs.zlib}/lib";
   };
   
   # Additional PATH entries
@@ -252,6 +252,7 @@ in
     export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$HOME/.npm-global/bin:$HOME/go/bin:$HOME/.dotnet/tools:$HOME/Android/Sdk/platform-tools:$HOME/Android/Sdk/cmdline-tools/latest/bin:$PATH"
     export NIX_LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib}/lib:${pkgs.gcc.cc.lib}/lib"
     export NIX_LD=$(cat ${pkgs.stdenv.cc}/nix-support/dynamic-linker)
+    export LD_LIBRARY_PATH="${pkgs.zlib}/lib:$LD_LIBRARY_PATH"
   '';
 
   # ===== DEVELOPMENT DIRECTORIES =====
