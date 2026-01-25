@@ -20,7 +20,7 @@ in
     firewall.extraCommands = ''
       iptables -t nat -A POSTROUTING -s 10.0.0.0/24 -o wlp2s0 -j MASQUERADE
     '';
-    
+
     # Simple firewall configuration
     firewall = {
       enable = true;
@@ -43,23 +43,23 @@ in
     iproute2.enable = true;
 
 
-    
-    # WireGuard VPN configuration
-    wireguard.interfaces = {
-      wg0 = {
-        ips = [ "10.0.0.1/24" ];
-        listenPort = 51820;
-        privateKeyFile = "/etc/wireguard/server_private.key";
 
-        peers = [
-          {
-            # Android client
-            publicKey = "avMBqSWyzXv3iY46OtE1rgHGJVsxl3rnB4PFCpNhwD0=";
-            allowedIPs = [ "10.0.0.2/32" ];
-          }
-        ];
-      };
-    };
+    # WireGuard VPN configuration
+    # wireguard.interfaces = {
+    #   wg0 = {
+    #     ips = [ "10.0.0.1/24" ];
+    #     listenPort = 51820;
+    #     privateKeyFile = "/etc/wireguard/server_private.key";
+
+    #     peers = [
+    #       {
+    #         # Android client
+    #         publicKey = "avMBqSWyzXv3iY46OtE1rgHGJVsxl3rnB4PFCpNhwD0=";
+    #         allowedIPs = [ "10.0.0.2/32" ];
+    #       }
+    #     ];
+    #   };
+    # };
 
     # Simple network configuration
     interfaces = {

@@ -106,6 +106,7 @@ in
     htop
     tree file
     unzip zip
+    # opencode
 
     # Networking tools
     inetutils
