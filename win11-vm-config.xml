@@ -1,34 +1,12 @@
 <domain type='kvm'>
   <name>win11-pro</name>
-  <metadata>
-    <libosinfo:libosinfo xmlns:libosinfo="http://libosinfo.org/xmlns/libvirt/domain/1.0">
-      <libosinfo:os id="http://microsoft.com/win/11"/>
-    </libosinfo:libosinfo>
-  </metadata>
-  
-  <memory unit='KiB'>20971520</memory>
-  <currentMemory unit='KiB'>20971520</currentMemory>
-  <vcpu placement='static'>8</vcpu>
-  
-  <sysinfo type='smbios'>
-    <system>
-      <entry name='manufacturer'>QEMU</entry>
-      <entry name='product'>Standard PC (Q35 + ICH9, 2009)</entry>
-      <entry name='version'>1.0</entry>
-    </system>
-  </sysinfo>
-  
-  <os firmware='efi'>
+  <memory unit='KiB'>8388608</memory>
+  <vcpu placement='static'>4</vcpu>
+  <os>
     <type arch='x86_64' machine='pc-q35-9.0'>hvm</type>
-    <firmware>
-      <feature enabled='no' name='enrolled-keys'/>
-      <feature enabled='no' name='secure-boot'/>
-    </firmware>
-    <nvram>/var/lib/libvirt/qemu/nvram/win11-pro_VARS.fd</nvram>
-    <bootmenu enable='yes' timeout='15000'/>
-    <smbios mode='sysinfo'/>
+    <loader readonly='yes' type='pflash'>/nix/store/bj6n0ifr6phpiyd38fzvd75y6gfzgd8k-qemu-10.0.2/share/qemu/edk2-x86_64-secure-code.fd</loader>
+    <nvram template='/nix/store/bj6n0ifr6phpiyd38fzvd75y6gfzgd8k-qemu-10.0.2/share/qemu/edk2-i386-vars.fd'>/var/lib/libvirt/qemu/nvram/win11-pro_VARS.fd</nvram>
   </os>
-  
   <features>
     <acpi/>
     <apic/>
@@ -41,40 +19,26 @@
       <synic state='on'/>
       <stimer state='on'/>
       <reset state='on'/>
-      <frequencies state='on'/>
     </hyperv>
-    <kvm>
-      <hidden state='on'/>
-    </kvm>
-    <vmport state='off'/>
     <smm state='on'/>
   </features>
-  
-  <cpu mode='host-passthrough' check='none' migratable='on'>
-    <topology sockets='1' dies='1' clusters='1' cores='4' threads='2'/>
-    <cache mode='passthrough'/>
+  <cpu mode='host-passthrough'>
+    <topology sockets='1' dies='1' clusters='1' cores='2' threads='2'/>
   </cpu>
-  
   <clock offset='localtime'>
     <timer name='rtc' tickpolicy='catchup'/>
     <timer name='pit' tickpolicy='delay'/>
     <timer name='hpet' present='no'/>
     <timer name='hypervclock' present='yes'/>
   </clock>
-  
-  <on_poweroff>destroy</on_poweroff>
-  <on_reboot>restart</on_reboot>
-  <on_crash>destroy</on_crash>
-  
-  <pm>
-    <suspend-to-mem enabled='no'/>
-    <suspend-to-disk enabled='no'/>
-  </pm>
-  
   <devices>
     <emulator>/run/libvirt/nix-emulators/qemu-system-x86_64</emulator>
-    
-    <!-- Windows 11 Installation ISO - SATA Controller -->
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2'/>
+      <source file='/var/lib/libvirt/images/win11-pro.qcow2'/>
+      <target dev='vda' bus='virtio'/>
+      <boot order='2'/>
+    </disk>
     <disk type='file' device='cdrom'>
       <driver name='qemu' type='raw'/>
       <source file='/var/lib/libvirt/images/Win11_23H2_English_x64.iso'/>
@@ -82,79 +46,27 @@
       <readonly/>
       <boot order='1'/>
     </disk>
-    
-    <!-- VirtIO Drivers ISO - SATA Controller -->
     <disk type='file' device='cdrom'>
       <driver name='qemu' type='raw'/>
       <source file='/var/lib/libvirt/images/virtio-win.iso'/>
       <target dev='sdb' bus='sata'/>
       <readonly/>
-      <boot order='2'/>
     </disk>
-    
-    <!-- Main System Disk - VirtIO for Performance -->
-    <disk type='file' device='disk'>
-      <driver name='qemu' type='qcow2' cache='writeback' discard='unmap'/>
-      <source file='/var/lib/libvirt/images/win11-pro.qcow2'/>
-      <target dev='vda' bus='virtio'/>
-      <boot order='3'/>
-    </disk>
-    
-    <controller type='usb' index='0' model='qemu-xhci' ports='15'/>
-    <controller type='pci' index='0' model='pcie-root'/>
-    <controller type='pci' index='1' model='pcie-root-port'>
-      <model name='pcie-root-port'/>
-      <target chassis='1' port='0x8'/>
-      <address type='pci' domain='0x0000' bus='0x00' slot='0x01' function='0x0' multipunction='on'/>
-    </controller>
-    <controller type='virtio-serial' index='0'/>
     <controller type='sata' index='0'>
       <address type='pci' domain='0x0000' bus='0x00' slot='0x1f' function='0x2'/>
     </controller>
-    
     <interface type='network'>
-      <mac address='52:54:00:d8:41:10'/>
       <source network='default'/>
       <model type='virtio'/>
     </interface>
-    
-    <serial type='pty'>
-      <target type='isa-serial' port='0'>
-        <model name='isa-serial'/>
-      </target>
-    </serial>
-    <console type='pty'>
-      <target type='serial' port='0'/>
-    </console>
-    
-    <channel type='spicevmc'>
-      <target type='virtio' name='com.redhat.spice.0'/>
-    </channel>
-    
+    <console type='pty'/>
     <input type='tablet' bus='usb'/>
-    <input type='mouse' bus='ps2'/>
-    <input type='keyboard' bus='ps2'/>
-    
     <tpm model='tpm-crb'>
       <backend type='emulator' version='2.0'/>
     </tpm>
-    
-    <graphics type='spice' autoport='yes' listen='127.0.0.1'>
-      <listen type='address' address='127.0.0.1'/>
-      <image compression='off'/>
-    </graphics>
-    
-    <sound model='ich9'/>
-    
-    <audio id='1' type='spice'/>
-    
+    <graphics type='spice' autoport='yes'/>
     <video>
-      <model type='virtio' heads='1' primary='yes'/>
+      <model type='vga'/>
     </video>
-    
-    <redirdev bus='usb' type='spicevmc'/>
-    <redirdev bus='usb' type='spicevmc'/>
-    
-    <memballoon model='virtio'/>
   </devices>
 </domain>
