@@ -22,10 +22,10 @@
     <type arch='x86_64' machine='pc-q35-9.0'>hvm</type>
     <firmware>
       <feature enabled='no' name='enrolled-keys'/>
-      <feature enabled='yes' name='secure-boot'/>
+      <feature enabled='no' name='secure-boot'/>
     </firmware>
     <nvram>/var/lib/libvirt/qemu/nvram/win11-pro_VARS.fd</nvram>
-    <bootmenu enable='yes'/>
+    <bootmenu enable='yes' timeout='15000'/>
     <smbios mode='sysinfo'/>
   </os>
   
