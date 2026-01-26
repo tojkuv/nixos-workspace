@@ -185,6 +185,28 @@ vnc-gnome-connections:
 	@echo "=== Launching GNOME Connections VNC Client ==="
 	gnome-connections
 
+win11-ip:
+	@virsh -c qemu:///system net-dhcp-leases default | grep -i "52:54:00:4d:8d:f9" | tail -n1 | awk '{print $$5}' | cut -d'/' -f1
+
+win11-rdp:
+	@echo "=== Connecting to Windows 11 VM via RDP ==="
+	@echo "Fetching VM IP address..."
+	@VM_IP=$$(make -s win11-ip); \
+	if [ -z "$$VM_IP" ]; then \
+		echo "Error: Could not find IP for win11-pro. Is the VM running?"; \
+		exit 1; \
+	fi; \
+	echo "Found VM at: $$VM_IP"; \
+	echo "Connecting with FreeRDP (Auto-Logon)..."; \
+	xfreerdp /v:$$VM_IP /u:tojku /p:unsecure /gfx:avc444 /rfx /sound /microphone /clipboard /dynamic-resolution /size:95% /cert:ignore /network:lan || \
+	echo "Connection closed."
+
+win11-status:
+	@echo "=== Windows 11 VM Status ==="
+	@virsh -c qemu:///system list --all | grep win11-pro
+	@echo -n "IP Address: " && make -s win11-ip
+	@echo -n "GPU Status: " && lspci -nnk -d 10de:2560 | grep "Kernel driver"
+
 # Remote Management (Android Workstation)
 ANDROID_IP ?= 
 ANDROID_USER ?= tojkuv

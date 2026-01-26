@@ -446,6 +446,7 @@ in
     # Virtual Machine Management GUI
     virt-manager       # VM management GUI for libvirtd
     virt-viewer        # SPICE client for VM console viewing
+    looking-glass-client # Low latency KVM FrameRelay
     qemu               # QEMU full system emulation
     spice-gtk          # GTK+ SPICE widget
     spice-protocol     # SPICE protocol headers

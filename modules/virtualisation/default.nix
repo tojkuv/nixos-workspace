@@ -98,6 +98,7 @@
   systemd.tmpfiles.rules = [
     "d /var/lib/libvirt 0755 root libvirtd -"
     "Z /home/tojkuv/Downloads - - qemu-libvirtd -"
+    "f /dev/shm/looking-glass 0660 tojkuv qemu-libvirtd -"
   ];
 
   # Additional kernel modules for virtualization

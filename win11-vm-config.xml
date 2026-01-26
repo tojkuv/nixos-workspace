@@ -1,11 +1,20 @@
 <domain type='kvm'>
   <name>win11-pro</name>
-  <memory unit='KiB'>8388608</memory>
-  <vcpu placement='static'>4</vcpu>
+  <uuid>7af26f92-91f7-42b8-b45d-6aa202142eca</uuid>
+  <memory unit='KiB'>20971520</memory>
+  <vcpu placement='static'>14</vcpu>
+  <sysinfo type='smbios'>
+    <system>
+      <entry name='manufacturer'>QEMU</entry>
+      <entry name='product'>Standard PC (Q35 + ICH9, 2009)</entry>
+      <entry name='version'>1.0</entry>
+    </system>
+  </sysinfo>
   <os>
-    <type arch='x86_64' machine='pc-q35-9.0'>hvm</type>
+    <type arch='x86_64' machine='pc-q35-9.2'>hvm</type>
     <loader readonly='yes' type='pflash'>/nix/store/bj6n0ifr6phpiyd38fzvd75y6gfzgd8k-qemu-10.0.2/share/qemu/edk2-x86_64-secure-code.fd</loader>
     <nvram template='/nix/store/bj6n0ifr6phpiyd38fzvd75y6gfzgd8k-qemu-10.0.2/share/qemu/edk2-i386-vars.fd'>/var/lib/libvirt/qemu/nvram/win11-pro_VARS.fd</nvram>
+    <smbios mode='sysinfo'/>
   </os>
   <features>
     <acpi/>
@@ -19,11 +28,12 @@
       <synic state='on'/>
       <stimer state='on'/>
       <reset state='on'/>
+      <frequencies state='on'/>
     </hyperv>
     <smm state='on'/>
   </features>
   <cpu mode='host-passthrough'>
-    <topology sockets='1' dies='1' clusters='1' cores='2' threads='2'/>
+    <topology sockets='1' dies='1' clusters='1' cores='7' threads='2'/>
   </cpu>
   <clock offset='localtime'>
     <timer name='rtc' tickpolicy='catchup'/>
@@ -56,15 +66,22 @@
       <address type='pci' domain='0x0000' bus='0x00' slot='0x1f' function='0x2'/>
     </controller>
     <interface type='network'>
+      <mac address='52:54:00:4d:8d:f9'/>
       <source network='default'/>
-      <model type='e1000e'/>
+      <model type='virtio'/>
     </interface>
     <console type='pty'/>
     <input type='tablet' bus='usb'/>
+    <input type='mouse' bus='ps2'/>
     <tpm model='tpm-crb'>
       <backend type='emulator' version='2.0'/>
     </tpm>
-    <graphics type='spice' autoport='yes'/>
+    <channel type='spicevmc'>
+      <target type='virtio' name='com.redhat.spice.0'/>
+    </channel>
+    <graphics type='spice' autoport='yes'>
+      <listen type='address'/>
+    </graphics>
     <video>
       <model type='vga'/>
     </video>

@@ -115,22 +115,22 @@ in
     '')
   ];
 
-    # GPU passthrough configuration (COMMENTED OUT to prevent virt-manager crashes)
-    # boot.kernelParams = lib.optionals cfg.enable [
-    #   # Enable IOMMU for device passthrough
-    #   "intel_iommu=on"
-    #   "amd_iommu=on" 
-    #   "iommu=pt"
-    #   
-    #   # Isolate devices for VM security
-    #   "isolcpus=1"
-    #   
-    #   # PCI settings for GPU passthrough
-    #   "pci=realloc,hpiosize=4096"
-    #   
-    #   # VFIO device IDs for NVIDIA GPU
-    #   "vfio-pci.ids=${cfg.primaryGpu.vendor}:${cfg.primaryGpu.device},${cfg.primaryGpu.vendor}:${cfg.primaryGpu.audioDevice}"
-    # ];
+    # GPU passthrough configuration
+    boot.kernelParams = lib.optionals cfg.enable [
+      # Enable IOMMU for device passthrough
+      "intel_iommu=on"
+      "amd_iommu=on" 
+      "iommu=pt"
+      
+      # Isolate devices for VM security
+      #"isolcpus=1"
+      
+      # PCI settings for GPU passthrough
+      "pci=realloc,hpiosize=4096"
+      
+      # VFIO device IDs for NVIDIA GPU
+      "vfio-pci.ids=${cfg.primaryGpu.vendor}:${cfg.primaryGpu.device},${cfg.primaryGpu.vendor}:${cfg.primaryGpu.audioDevice}"
+    ];
     
 
 
