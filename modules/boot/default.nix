@@ -51,15 +51,14 @@
     tmp.useTmpfs = true;
     tmp.tmpfsSize = "50%";
     
-    # Basic kernel modules
-    kernelModules = [
-      "kvm-intel" "kvm-amd"
-      "vfio-pci"
-      "binder_linux"
-      "ashmem_linux"
-    ];
-    
-    # Basic module loading
+    # Basic kernel module loading
     initrd.kernelModules = [ "overlay" "br_netfilter" ];
+    
+    # IOMMU and virtualization support
+    kernelParams = [
+      "intel_iommu=on"
+      "amd_iommu=on" 
+      "iommu=pt"
+    ];
   };
 }

@@ -7,11 +7,13 @@
   users = {
     mutableUsers = false;
     
+    groups.libvirt = {};
+    
     users.tojkuv = {
       isNormalUser = true;
       description = "Tojkuv";
       extraGroups = [
-        "wheel" "networkmanager" "podman" "kvm" "libvirtd"
+        "wheel" "networkmanager" "podman" "kvm" "libvirtd" "libvirt"
         "audio" "video" "input" "storage" "adbusers" "waydroid"
       ];
       shell = pkgs.bash;

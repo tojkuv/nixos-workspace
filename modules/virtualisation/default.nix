@@ -1,101 +1,53 @@
-# Virtualisation Configuration Module
-# Handles Podman, libvirtd, and container settings
+# Virtualisation Module
+# Handles QEMU/KVM virtualization and container orchestration
 
 { config, pkgs, lib, ... }:
 
 {
-  virtualisation = {
-    waydroid.enable = false;
 
-    podman = {
-      enable = true;
-      
-      # Docker compatibility for seamless transition
-      dockerCompat = true;
-      dockerSocket.enable = true;
-      
-      # Default network settings
-      defaultNetwork.settings.dns_enabled = true;
-      
-      # Auto-update and cleanup
-      autoPrune = {
+  # Enable libvirt for VM management
+  virtualisation.libvirtd = {
+    enable = true;
+    qemu = {
+      package = pkgs.qemu_kvm;
+      runAsRoot = true;
+      swtpm.enable = true;
+      ovmf = {
         enable = true;
-        dates = "daily";
-        flags = [ "--all" ];
+        packages = [ pkgs.OVMFFull.fd ];
       };
-      
-      # Extra packages for full compatibility
-      extraPackages = with pkgs; [ 
-        buildah 
-        skopeo 
-        runc 
-        crun
-        fuse-overlayfs
-        slirp4netns
-      ];
+      verbatimConfig = ''
+        user = "root"
+        group = "root"
+        '';
     };
     
-    libvirtd = {
-      enable = true;
-      qemu = {
-        package = pkgs.qemu_kvm;
-        runAsRoot = false;
-        swtpm.enable = true;
-      };
-    };
-
-    containers.enable = true;
-  };
-  
-  # Podman container configuration files
-  environment.etc = {
-    "containers/policy.json" = lib.mkForce {
-      text = ''
-        {
-          "default": [
-            {
-              "type": "insecureAcceptAnything"
-            }
-          ],
-          "transports": {
-            "docker-daemon": {
-              "": [{"type": "insecureAcceptAnything"}]
-            }
-          }
-        }
-      '';
-      mode = "0644";
-    };
-
-    "containers/registries.conf" = lib.mkForce {
-      text = ''
-        unqualified-search-registries = ["docker.io"]
-
-        [[registry]]
-        prefix = "docker.io"
-        location = "docker.io"
-      '';
-      mode = "0644";
-    };
-  };
-  
-  # Systemd optimizations for container orchestration
-  systemd.services = {
-    # Override systemd service settings for better container support
-    podman.serviceConfig = {
-      TimeoutStopSec = 30;
-      TimeoutStartSec = 30;
-      LimitNOFILE = 1048576;
-      LimitNPROC = 1048576;
-      LimitMEMLOCK = "infinity";
-    };
+    onBoot = "ignore";
+    onShutdown = "shutdown";
   };
 
-  # Enable systemd-resolved for container DNS
-  services.resolved.enable = true;
+  # GPU passthrough configuration (disabled by default for safety)
+  virtualisation.gpuPassthrough.enable = lib.mkDefault false;
 
-  # Waydroid user group
-  users.groups.waydroid = {};
+    # Enable SPICE for enhanced VM experience
+  virtualisation.spiceUSBRedirection.enable = true;
+  services.spice-vdagentd.enable = true;
+
+  # Container orchestration with Podman
+  virtualisation.podman = {
+    enable = true;
+    dockerCompat = true;
+    defaultNetwork.settings.dns = ["8.8.8.8"];
+  };
+
+  # Groups for VM and USB access
+  users.groups = {
+    waydroid = {};
+    plugdev = {};
+    usb = {};
+    libvirtd = {};
+    qemu-libvirtd = {};
+  };
 
   # Ensure user configs are available for rootless podman
   system.activationScripts.podmanUserConfigs = ''
@@ -110,4 +62,51 @@
       fi
     done
   '';
+
+  # Tools for VM management and GPU passthrough
+  environment.systemPackages = with pkgs; [
+    qemu
+    qemu_kvm
+    virt-manager
+    virt-viewer
+    spice
+    spice-gtk
+    spice-protocol
+    usbutils
+    pciutils
+    dmidecode
+    # Additional GUI dependencies for virt-manager
+    python3
+    python3Packages.libvirt
+    python3Packages.pygobject3
+    python3Packages.requests
+    gtk3
+    gtksourceview4
+    vte
+    libvirt
+    libosinfo
+    cdrtools
+    # Windows VM support packages
+    win-virtio
+    swtpm
+  ];
+
+  # USB device management and permissions
+  services.udev.packages = [ pkgs.usbutils ];
+  
+  # Fix libvirt file access permissions
+  systemd.tmpfiles.rules = [
+    "d /var/lib/libvirt 0755 root libvirtd -"
+    "Z /home/tojkuv/Downloads - - qemu-libvirtd -"
+  ];
+
+  # Additional kernel modules for virtualization
+  boot.kernelModules = [
+    "kvm-amd"  # Change to kvm-intel for Intel CPUs
+    "vhost_net"  # For virtio networking performance
+    "vhost_vsock"  # For host-guest communication
+    "vfio-pci"  # Enable for GPU passthrough if needed
+    "binder_linux"
+    "ashmem_linux"
+  ];
 }

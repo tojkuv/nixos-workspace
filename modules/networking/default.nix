@@ -11,14 +11,20 @@ in
   networking = {
     hostName = "dev-workstation-${developmentEnvironment}";
     networkmanager.enable = true;
+    
+    # Disable ModemManager to avoid udev rule validation errors (not needed for development workstation)
+    modemmanager.enable = false;
     # nameservers = [ "1.1.1.1" "8.8.8.8" "8.8.4.4" ]; # Disabled - let resolved handle DNS
 
     # Enable IPv6 support explicitly
     enableIPv6 = true;
 
-    # Enable IP forwarding for VPN
+    # Enable IP forwarding for VPN and VMs
     firewall.extraCommands = ''
-      iptables -t nat -A POSTROUTING -s 10.0.0.0/24 -o wlp2s0 -j MASQUERADE
+      iptables -t nat -A POSTROUTING -s 10.0.0.0/24 -j MASQUERADE
+      iptables -t nat -A POSTROUTING -s 192.168.122.0/24 -j MASQUERADE
+      iptables -A FORWARD -i virbr0 -j ACCEPT
+      iptables -A FORWARD -o virbr0 -m state --state RELATED,ESTABLISHED -j ACCEPT
     '';
 
     # Simple firewall configuration
@@ -61,9 +67,22 @@ in
     #   };
     # };
 
+    # Configure libvirt bridge
+    bridges = {
+      virbr0.interfaces = [];
+    };
+
     # Simple network configuration
     interfaces = {
       lo = {
+      };
+      virbr0 = {
+        ipv4.addresses = [
+          {
+            address = "192.168.122.1";
+            prefixLength = 24;
+          }
+        ];
       };
     };
   };

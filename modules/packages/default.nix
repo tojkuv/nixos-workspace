@@ -23,12 +23,17 @@ let
     seaborn
     jupyter
 
-    # Database connectivity
-    sqlalchemy
-    alembic
-    psycopg2
-    redis
-    asyncpg
+     # Database connectivity
+     sqlalchemy
+     alembic
+     psycopg2
+     redis
+     asyncpg
+     
+     # ===== CUDA & COMPILER TOOLS =====
+     # cudatext               # CUDA text processing (language models)
+     # cudaPackages.cuda_cc     # CUDA compiler  
+     # gcc_12                    # NVIDIA CUDA compiler
 
     # HTTP and API clients
     httpx
@@ -74,16 +79,18 @@ in
     prismlauncher
     gamemode
     mangohud
-    (pkgs.runCommand "modrinth-app-amd" {
-      buildInputs = [ pkgs.makeWrapper ];
-    } ''
-      mkdir -p $out/bin
-      makeWrapper ${pkgs.modrinth-app}/bin/ModrinthApp $out/bin/ModrinthApp \
-        --set __GLX_VENDOR_LIBRARY_NAME mesa \
-        --set __NV_PRIME_RENDER_OFFLOAD 0 \
-        --set DRI_PRIME 1 \
-        --set VK_ICD_FILENAMES /run/opengl-driver/share/vulkan/icd.d/radeon_icd.x86_64.json \
-        --set GDK_BACKEND x11
+    
+    # CUDA development tools
+    # cudaPackages.cuda_cc
+    # nsight-systems
+    # nvtop
+    (pkgs.writeShellScriptBin "modrinth-app-nvidia" ''
+      export __GLX_VENDOR_LIBRARY_NAME=nvidia
+      export __NV_PRIME_RENDER_OFFLOAD=1
+      export DRI_PRIME=0
+      export VK_ICD_FILENAMES=/run/opengl-driver/share/vulkan/icd.d/nvidia_icd.x86_64.json
+      export GDK_BACKEND=x11
+      exec ${pkgs.modrinth-app}/bin/ModrinthApp "$@"
     '')
     blockbench
     gearlever
@@ -343,7 +350,20 @@ in
      # ===== WEB BROWSERS =====
      chromium            # Open-source browser (default)
      firefox             # Privacy-focused browser
+     firefox-devedition  # Firefox Developer Edition
      microsoft-edge      # Professional browser
+
+     # ===== CUDA & DEVELOPMENT TOOLS =====
+     # cudatext               # CUDA text processing (language models)
+     # cudaPackages.cuda-cc     # CUDA compiler
+     # nsight-systems          # NVIDIA profiling tools
+     # nvtop                   # NVIDIA GPU monitoring
+
+     # ===== CUDA DEVELOPMENT PACKAGES =====
+     # cudaPackages.cudnn     # Deep learning library
+     # cudaPackages.cutlass     # NVIDIA template library  
+     # cudaPackages.cublas     # CUDA linear algebra
+     # nsight-systems          # NVIDIA profiling tools
 
     # ===== USER APPLICATIONS =====
     zoom-us
@@ -422,7 +442,16 @@ in
     texlive.combined.scheme-full  # LaTeX distribution for professional typesetting
 
     # ===== VIRTUALIZATION TOOLS =====
-    quickemu           # Quick VM management
+    
+    # Virtual Machine Management GUI
+    virt-manager       # VM management GUI for libvirtd
+    virt-viewer        # SPICE client for VM console viewing
+    qemu               # QEMU full system emulation
+    spice-gtk          # GTK+ SPICE widget
+    spice-protocol     # SPICE protocol headers
+    
+    # USB debugging and management
+    usbutils           # USB utilities (lsusb, etc.)
 
     # Node.js global packages
     nodePackages.typescript
@@ -437,84 +466,62 @@ in
     nodePackages.autoprefixer    # CSS vendor prefixes
   ];
 
-  # Dynamic linking support for Claude Code and other native binaries
+  # Dynamic linking support for native binaries
   programs.nix-ld = {
     enable = true;
     libraries = with pkgs; [
+      # Core libraries for most applications
       stdenv.cc.cc
       stdenv.cc.cc.lib
       gcc.cc.lib
-      gcc
       openssl
-      curl
       glib
       zlib
       libz
-      xz
-      bzip2
       ncurses
-
-      # Additional development libraries
+      libffi
       libxml2
       libxslt
       readline
       sqlite
-      libnl
-      libseccomp
-      systemd
-      util-linux
 
-      # Additional C++ runtime libraries
-      libgcc
-      libcxx
+      # Graphics and display libraries
+      xorg.libX11
+      xorg.libXext
+      xorg.libXrandr
+      xorg.libXi
+      xorg.libXcursor
+      xorg.libXfixes
+      xorg.libXtst
+      libpulseaudio
+      mesa
+      libGL
 
-       # X11 libraries for Android emulator
-       xorg.libX11
-       xorg.libXext
-       xorg.libXrender
-       xorg.libXrandr
-       xorg.libXi
-       xorg.libXcursor
-       xorg.libXfixes
-       xorg.libXtst
-        xorg.libXdamage
-        xorg.libxcb
-        xorg.libXcomposite
-        libpulseaudio
-         mesa
-         libGL
-         vulkan-loader
-         vulkan-tools
-         vulkan-validation-layers
+      # Browser and Electron specific libraries
+      atk
+      cairo
+      cups
+      dbus-glib
+      expat
+      fontconfig
+      freetype
+      gdk-pixbuf
+      gtk3
+      libappindicator-gtk3
+      libdrm
+      libnotify
+      libsecret
+      libuuid
+      nspr
+      nss
+      pango
 
-         # Wayland input library for Bevy games
-         libxkbcommon
-
-          # XKB keyboard input libraries for Bevy
-          libxkbcommon
-          xorg.libxcb
-          xorg.libX11
-          xorg.libXext
-          xorg.libXrandr
-          xorg.libXi
-          xorg.libXcursor
-          xorg.xkbcomp
-          xorg.setxkbmap
-
-        # Additional C runtime libraries for development tools
-       libffi
-       libedit
-       libjpeg
-       libpng
-       libtiff
-       libwebp
-       icu
-       libxml2
-       libxslt
-       readline
-       sqlite
-       libnl
-       libseccomp
+      # Additional image and compression libraries
+      libjpeg
+      libpng
+      libtiff
+      libwebp
+      icu
     ];
   };
 }

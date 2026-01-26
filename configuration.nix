@@ -29,6 +29,9 @@ in
     ./modules/programs
   ];
 
+  # Enable GPU passthrough for Windows VM
+  virtualisation.gpuPassthrough.enable = true;
+
   # System metadata
   system = {
     stateVersion = "25.05";
