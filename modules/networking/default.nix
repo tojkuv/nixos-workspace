@@ -67,23 +67,23 @@ in
     #   };
     # };
 
-    # Configure libvirt bridge
-    bridges = {
-      virbr0.interfaces = [];
-    };
+    # Configure libvirt bridge (Managed by libvirtd 'default' network)
+    # bridges = {
+    #   virbr0.interfaces = [];
+    # };
 
     # Simple network configuration
     interfaces = {
       lo = {
       };
-      virbr0 = {
-        ipv4.addresses = [
-          {
-            address = "192.168.122.1";
-            prefixLength = 24;
-          }
-        ];
-      };
+      # virbr0 = {
+      #   ipv4.addresses = [
+      #     {
+      #       address = "192.168.122.1";
+      #       prefixLength = 24;
+      #     }
+      #   ];
+      # };
     };
   };
 }
