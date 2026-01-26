@@ -13,3 +13,6 @@ result-*
 Thumbs.db
 *.key
 *.iso
+
+# ref folder
+.ref
