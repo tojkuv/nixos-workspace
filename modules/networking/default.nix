@@ -25,6 +25,8 @@ in
       iptables -t nat -A POSTROUTING -s 192.168.122.0/24 -j MASQUERADE
       iptables -A FORWARD -i virbr0 -j ACCEPT
       iptables -A FORWARD -o virbr0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+      # Allow DHCP/DNS from VMs to host
+      iptables -A INPUT -i virbr0 -j ACCEPT
     '';
 
     # Simple firewall configuration
