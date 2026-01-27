@@ -119,4 +119,76 @@ in
       device = "8a12";
     };
   };
+
+  # Check for duplicate option declarations across modules
+  # Usage: lib.custom.validateNoDuplicateOptions modules
+  validateNoDuplicateOptions = modules:
+    let
+      allOptions = lib.foldl' (acc: module:
+        acc // (lib.mapAttrs' (name: value:
+          lib.nameValuePair "${module._file}:${name}" value
+        ) (module.options or { }))
+      ) { } modules;
+
+      duplicates = lib.genAttrs (lib.attrNames (lib.groupBy (opt:
+        lib.concatStringsSep ":" (lib.init (lib.splitString ":" opt))
+      ) (lib.attrNames allOptions))) (key:
+        lib.head (lib.getAttr key (lib.groupBy (opt:
+          lib.concatStringsSep ":" (lib.init (lib.splitString ":" opt))
+        ) (lib.attrNames allOptions)))
+      );
+
+      duplicatesList = lib.attrNames (lib.filter (count: count > 1) (lib.mapAttrs (name: value: lib.length value) (lib.groupBy (opt:
+        lib.concatStringsSep ":" (lib.init (lib.splitString ":" opt))
+      ) (lib.attrNames allOptions))));
+
+      result = if duplicatesList == [ ] then [ ] else duplicatesList;
+    in
+    if result == [ ] then
+      true
+    else
+      throw "Duplicate options found: ${lib.concatStringsSep ", " result}";
+
+  # Validate module imports exist
+  validateImports = modules:
+    let
+      checked = lib.foldl' (acc: module:
+        let
+          file = module._file or "unknown";
+          imports = (module.config or { }).imports or [ ];
+          existingImports = builtins.filter (imp:
+            builtins.pathExists (if builtins.isPath imp then imp else imp)
+          ) imports;
+          missingImports = builtins.filter (imp:
+            !builtins.elem imp existingImports
+          ) imports;
+        in
+        acc // { ${file} = missingImports; }
+      ) { } modules;
+      missing = lib.concatStringsSep ", " (lib.attrValues (lib.filter (v: v != [ ]) checked));
+    in
+    if missing == "" then true else throw "Missing imports: ${missing}";
+
+  # Check for common anti-patterns in modules
+  checkModuleHealth = module:
+    let
+      file = module._file or "unknown";
+      issues = [ ];
+
+      # Check for rec { }
+      hasRec = builtins.match "rec\s*{" (builtins.toJSON module) != null;
+
+      # Check for with pkgs
+      hasWithPkgs = builtins.match "(^|\n)\s*with\s+[^;]*pkgs" (builtins.toJSON module) != null;
+
+      # Check for hardcoded paths
+      hasHardcodedPaths = builtins.match "/home/[a-zA-Z0-9_-]+" (builtins.toJSON module) != null;
+
+      allIssues = builtins.concatLists [
+        (if hasRec then [ "Uses 'rec { }' instead of 'let ... in'" ] else [ ])
+        (if hasWithPkgs then [ "Uses 'with pkgs' instead of explicit imports" ] else [ ])
+        (if hasHardcodedPaths then [ "Contains hardcoded home directory paths" ] else [ ])
+      ];
+    in
+    if allIssues == [ ] then true else throw "Module ${file} has issues: ${lib.concatStringsSep ", " allIssues}";
 }
