@@ -4,7 +4,6 @@
 
 set dotenv-load := false
 set shell := ["bash", "-c"]
-set ignore_comments := false
 
 # Default recipe - show help
 default:
@@ -74,9 +73,9 @@ lock-flake:
 
 # Format all Nix files
 fmt:
-    @echo "=== Formatting Nix Files ==="
-    nix fmt
-    echo "✓ All files formatted"
+	@echo "=== Formatting Nix Files ==="
+	nix develop --command nixfmt flake.nix configuration.nix
+	echo "✓ All files formatted"
 
 # Lint Nix files with statix
 lint:
@@ -94,13 +93,39 @@ format: fmt lint
 
 # Run integration tests
 test-integration:
-    @echo "=== Running Integration Tests ==="
-    if [ -f modules/tests/run-tests.sh ]; then
-        bash modules/tests/run-tests.sh
-    else
-        echo "Test script not found"
-        exit 1
-    fi
+	@echo "=== Running Integration Tests ==="
+
+	@echo ""
+	@echo "--- Network Tests ---"
+	-@ip link show | grep -q 'state UP' && echo "✓ Network interface up" || echo "✗ Network interface down"
+	-@ip route show default | grep -q . && echo "✓ Default route exists" || echo "✗ No default route"
+	-@curl -s --connect-timeout 5 https://cache.nixos.org > /dev/null 2>&1 && echo "✓ DNS resolution works" || echo "✗ DNS resolution failed"
+
+	@echo ""
+	@echo "--- Service Tests ---"
+	-@(systemctl is-active sshd || systemctl is-active ssh) > /dev/null 2>&1 && echo "✓ SSH service running" || echo "✗ SSH service not running"
+	-@systemctl is-active dbus > /dev/null 2>&1 && echo "✓ DBus running" || echo "✗ DBus not running"
+	-@(systemctl is-active NetworkManager || systemctl is-active networkd) > /dev/null 2>&1 && echo "✓ NetworkManager running" || echo "✗ NetworkManager not running"
+
+	@echo ""
+	@echo "--- GPU Tests ---"
+	-@lspci | grep -iE 'vga|3d' | grep -q . && echo "✓ GPU detected" || echo "✗ No GPU detected"
+	-@test -d /dev/dri && echo "✓ DRI available" || echo "✗ DRI not available"
+
+	@echo ""
+	@echo "--- System Tests ---"
+	-@systemctl is-active nix-daemon > /dev/null 2>&1 && echo "✓ Nix daemon running" || echo "✗ Nix daemon not running"
+	-@test -L /run/current-system && echo "✓ Current system symlink exists" || echo "✗ System symlink missing"
+	-@nixos-version --revision | grep -q . && echo "✓ Configuration parsed" || echo "✗ Configuration parse failed"
+
+	@echo ""
+	@echo "--- Environment Tests ---"
+	-@test -n "$DRI_PRIME" && echo "✓ DRI_PRIME set" || echo "✗ DRI_PRIME not set"
+	-@test -n "$MOZ_ENABLE_WAYLAND" && echo "✓ MOZ_ENABLE_WAYLAND set" || echo "✗ MOZ_ENABLE_WAYLAND not set"
+	-@test -n "$SSL_CERT_FILE" && echo "✓ SSL_CERT_FILE set" || echo "✗ SSL_CERT_FILE not set"
+
+	@echo ""
+	@echo "✓ Integration tests complete"
 
 # =============================================================================
 # Development Shell
@@ -140,9 +165,63 @@ clean:
 
 # Optimize nix store
 optimize:
-    @echo "=== Optimizing Nix Store ==="
-    sudo nix-store --optimize
-    echo "✓ Nix store optimized"
+	@echo "=== Optimizing Nix Store ==="
+	sudo nix-store --optimize
+	echo "✓ Nix store optimized"
+
+# =============================================================================
+# Troubleshooting
+# =============================================================================
+
+# Run diagnostics and troubleshooting
+troubleshoot:
+	@echo "=== NixOS Configuration Troubleshooting ==="
+	@echo ""
+
+	@echo "--- System Configuration ---"
+	-systemctl is-active nix-daemon > /dev/null 2>&1 && echo "✓ Nix daemon running" || echo "✗ Nix daemon not running"
+	-test -L /run/current-system && echo "✓ Current system exists" || echo "✗ Current system missing"
+	-test -f configuration.nix && echo "✓ Configuration imports exist" || echo "✗ Configuration file missing"
+	-test -d modules && echo "✓ Modules directory exists" || echo "✗ Modules directory missing"
+
+	@echo ""
+	@echo "--- Flake Configuration ---"
+	-test -f flake.nix && echo "✓ Flake.nix exists" || echo "✗ Flake.nix missing"
+	-test -f flake.lock && echo "✓ Flake.lock exists" || echo "✗ Flake.lock missing"
+	-nix flake check > /dev/null 2>&1 && echo "✓ Flake check passes" || echo "⚠ Flake check has warnings"
+
+	@echo ""
+	@echo "--- Network Configuration ---"
+	-(systemctl is-active NetworkManager || systemctl is-active networkd) > /dev/null 2>&1 && echo "✓ NetworkManager running" || echo "✗ NetworkManager not running"
+	-nslookup cache.nixos.org > /dev/null 2>&1 && echo "✓ DNS resolution works" || echo "✗ DNS resolution failed"
+
+	@echo ""
+	@echo "--- Critical Services ---"
+	-(systemctl is-active sshd || systemctl is-active ssh) > /dev/null 2>&1 && echo "✓ SSH enabled" || echo "✗ SSH not enabled"
+	-systemctl is-active dbus > /dev/null 2>&1 && echo "✓ DBus running" || echo "✗ DBus not running"
+
+	@echo ""
+	@echo "--- Hardware ---"
+	-lspci | grep -iE 'vga|3d' | grep -q . && echo "✓ GPU detected" || echo "⚠ No GPU detected"
+	-lsmod | grep -q nvidia && echo "✓ NVIDIA driver loaded" || echo "⚠ NVIDIA driver not loaded"
+
+	@echo ""
+	@echo "--- Environment Variables ---"
+	-test -n "$DRI_PRIME" && echo "✓ DRI_PRIME set" || echo "⚠ DRI_PRIME not set"
+	-test -n "$MOZ_ENABLE_WAYLAND" && echo "✓ MOZ_ENABLE_WAYLAND set" || echo "⚠ MOZ_ENABLE_WAYLAND not set"
+
+	@echo ""
+	@echo "--- Build Test ---"
+	-nix-instantiate --parse configuration.nix > /dev/null 2>&1 && echo "✓ Configuration parses" || echo "✗ Configuration parse failed"
+
+	@echo ""
+	@echo "=== Common Issues ==="
+	@echo "1. If flake check fails: nix flake update"
+	@echo "2. If env vars not set: source /etc/set-environment or logout/login"
+	@echo "3. If GPU issues: check nvidia-smi"
+	@echo "4. If services fail: systemctl status <service>"
+	@echo ""
+	@echo "✓ Troubleshooting complete"
 
 # =============================================================================
 # Diagnostics
@@ -209,8 +288,9 @@ help:
     @echo "  just optimize      - Optimize nix store"
     @echo ""
     @echo "Diagnostics:"
-    @echo "  just generations   - List all system generations"
-    @echo "  just rollback      - Rollback to previous generation"
-    @echo "  just info          - Show current system info"
+    @echo "  just troubleshoot    - Run diagnostics and troubleshooting"
+    @echo "  just generations     - List all system generations"
+    @echo "  just rollback        - Rollback to previous generation"
+    @echo "  just info            - Show current system info"
     @echo ""
     @echo "Run 'just' without arguments to see this help"

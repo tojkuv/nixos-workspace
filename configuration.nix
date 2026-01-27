@@ -2,7 +2,12 @@
 # Modular, Clean, Zero Technical Debt Architecture
 # System-level configuration with all packages and programs
 
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 let
   # Version and metadata management
@@ -14,7 +19,7 @@ in
   imports = [
     # Hardware configuration (auto-generated)
     ./hardware-configuration.nix
-    
+
     # Modular configuration imports
     ./modules/boot
     ./modules/networking
@@ -44,7 +49,6 @@ in
     };
   };
 
-
   # Nix configuration - use flakes for reproducibility, disable channels
   nixpkgs.config = {
     allowUnfree = true;
@@ -64,7 +68,12 @@ in
     ];
 
     settings = {
-      experimental-features = [ "nix-command" "flakes" "auto-allocate-uids" "cgroups" ];
+      experimental-features = [
+        "nix-command"
+        "flakes"
+        "auto-allocate-uids"
+        "cgroups"
+      ];
       auto-optimise-store = true;
       max-jobs = "auto";
       cores = 0;
@@ -77,39 +86,42 @@ in
       accept-flake-config = true;
       warn-dirty = false;
       allow-import-from-derivation = true;
-      
+
       substituters = [
         "https://cache.nixos.org/"
         "https://nix-community.cachix.org"
         "https://devenv.cachix.org"
       ];
-      
+
       trusted-public-keys = [
         "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
         "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
         "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw="
       ];
-      
+
       require-sigs = true;
-      trusted-users = [ "root" "tojkuv" ];
+      trusted-users = [
+        "root"
+        "tojkuv"
+      ];
       allowed-users = [ "@wheel" ];
       sandbox = true;
       restrict-eval = false; # Needed for home-manager
     };
-    
+
     gc = {
       automatic = true;
       dates = "daily";
       options = "--delete-older-than 3d --max-freed $((64 * 1024**3))";
     };
-    
+
     optimise = {
       automatic = true;
       dates = [ "03:45" ];
     };
-    
+
     nrBuildUsers = 32;
-    
+
     extraOptions = ''
       max-silent-time = 3600
       timeout = 7200

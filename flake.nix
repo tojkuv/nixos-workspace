@@ -5,9 +5,13 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
 
-  outputs = { self, nixpkgs }:
+  outputs =
+    { self, nixpkgs }:
     let
-      systems = [ "x86_64-linux" "aarch64-linux" ];
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
       forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f system);
 
       # Import custom overlays as a set
@@ -19,7 +23,12 @@
     {
       # Shared nix configuration for all nix tools
       nixConfig = {
-        experimental-features = [ "nix-command" "flakes" "auto-allocate-uids" "cgroups" ];
+        experimental-features = [
+          "nix-command"
+          "flakes"
+          "auto-allocate-uids"
+          "cgroups"
+        ];
         auto-optimise-store = true;
         max-jobs = "auto";
         cores = 0;
@@ -42,7 +51,10 @@
           "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
           "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw="
         ];
-        trusted-users = [ "root" "tojkuv" ];
+        trusted-users = [
+          "root"
+          "tojkuv"
+        ];
         allowed-users = [ "@wheel" ];
       };
 
@@ -77,7 +89,7 @@
         };
       });
 
-      # Default package for nix fmt
+      # Default package for nix fmt (per-system for flake compatibility)
       formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.nixfmt-rfc-style);
     };
 }
