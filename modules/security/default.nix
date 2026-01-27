@@ -81,17 +81,17 @@
   ];
   
    # System-level environment variables to prevent CLI usage and fix SSL certificates
-   environment.variables = {
-     # Prevent common CLI password managers from being used
-     BITWARDEN_CLI_DISABLED = "true";
-     PASSWORD_STORE_DISABLED = "true";
-     GOPASS_DISABLED = "true";
-     ENTERPRISE_SECURITY_POLICY = "CLI_PASSWORD_MANAGERS_DISABLED";
+    environment.sessionVariables = {
+      # Prevent common CLI password managers from being used
+      BITWARDEN_CLI_DISABLED = "true";
+      PASSWORD_STORE_DISABLED = "true";
+      GOPASS_DISABLED = "true";
+      ENTERPRISE_SECURITY_POLICY = "CLI_PASSWORD_MANAGERS_DISABLED";
 
-     # Fix SSL certificate validation by setting the certificate file path
-     SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
-     CURL_CA_BUNDLE = "/etc/ssl/certs/ca-bundle.crt";
-   };
+      # Fix SSL certificate validation by setting the certificate file path
+      SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
+      CURL_CA_BUNDLE = "/etc/ssl/certs/ca-bundle.crt";
+    };
   
   # Add security notice to shell profiles
   environment.interactiveShellInit = ''

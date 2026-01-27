@@ -17,7 +17,7 @@ in
     
     # Modular configuration imports
     ./modules/boot
-    ./modules/networking  
+    ./modules/networking
     ./modules/users
     ./modules/services
     ./modules/security
@@ -27,6 +27,7 @@ in
     ./modules/fonts
     ./modules/packages
     ./modules/programs
+    ./modules/environment
   ];
 
   # Enable GPU passthrough for Windows VM

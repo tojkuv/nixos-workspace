@@ -529,11 +529,15 @@ in
        libtiff
        libwebp
        icu
-     ];
-   };
 
-   # Set PKG_CONFIG_PATH for development
-   environment.sessionVariables = {
-     PKG_CONFIG_PATH = "${pkgs.wayland.dev}/lib/pkgconfig:${pkgs.libxkbcommon.dev}/lib/pkgconfig";
-   };
+       # Bevy game engine dependencies
+       wayland
+       alsa-lib
+       udev
+      ];
+    };
+
+     # Set PKG_CONFIG_PATH for development
+    # Moved to modules/environment/default.nix for centralized management
+    # PKG_CONFIG_PATH = "${pkgs.wayland.dev}/lib/pkgconfig:${pkgs.libxkbcommon.dev}/lib/pkgconfig:${pkgs.alsa-lib.dev}/lib/pkgconfig:${pkgs.udev.dev}/lib/pkgconfig";
 }
