@@ -12,16 +12,12 @@
       package = pkgs.qemu_kvm;
       runAsRoot = true;
       swtpm.enable = true;
-      ovmf = {
-        enable = true;
-        packages = [ pkgs.OVMFFull.fd ];
-      };
       verbatimConfig = ''
         user = "root"
         group = "root"
-        '';
+      '';
     };
-    
+
     onBoot = "ignore";
     onShutdown = "shutdown";
   };
@@ -64,31 +60,31 @@
   '';
 
   # Tools for VM management and GPU passthrough
-  environment.systemPackages = with pkgs; [
-    qemu
-    qemu_kvm
-    virt-manager
-    virt-viewer
-    spice
-    spice-gtk
-    spice-protocol
-    usbutils
-    pciutils
-    dmidecode
+  environment.systemPackages = [
+    pkgs.qemu
+    pkgs.qemu_kvm
+    pkgs.virt-manager
+    pkgs.virt-viewer
+    pkgs.spice
+    pkgs.spice-gtk
+    pkgs.spice-protocol
+    pkgs.usbutils
+    pkgs.pciutils
+    pkgs.dmidecode
     # Additional GUI dependencies for virt-manager
-    python3
-    python3Packages.libvirt
-    python3Packages.pygobject3
-    python3Packages.requests
-    gtk3
-    gtksourceview4
-    vte
-    libvirt
-    libosinfo
-    cdrtools
+    pkgs.python3
+    pkgs.python3Packages.libvirt
+    pkgs.python3Packages.pygobject3
+    pkgs.python3Packages.requests
+    pkgs.gtk3
+    pkgs.gtksourceview4
+    pkgs.vte
+    pkgs.libvirt
+    pkgs.libosinfo
+    pkgs.cdrtools
     # Windows VM support packages
-    win-virtio
-    swtpm
+    pkgs.virtio-win
+    pkgs.swtpm
   ];
 
   # USB device management and permissions

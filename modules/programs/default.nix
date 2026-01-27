@@ -5,15 +5,22 @@
 
 {
   # Browser-specific packages
-  environment.systemPackages = with pkgs; [
-    # Browser development tools
-    firefox-devedition           # Developer Edition for advanced users
+  environment.systemPackages = [
+    pkgs.firefox-devedition
   ];
 
   # Font configuration for better browser rendering
-  fonts.packages = with pkgs; [
-    noto-fonts
-    fira-code
-    jetbrains-mono
+  fonts.packages = [
+    pkgs.noto-fonts
+    pkgs.fira-code
+    pkgs.jetbrains-mono
   ];
+
+  # Direnv for automatic shell environment activation
+  programs.direnv = {
+    enable = true;
+    nix-direnv = {
+      enable = true;
+    };
+  };
 }

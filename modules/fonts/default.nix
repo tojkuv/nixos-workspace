@@ -7,26 +7,26 @@
   fonts = {
     enableDefaultPackages = true;
     
-    packages = with pkgs; [
+    packages = [
       # Professional coding fonts
-      nerd-fonts.fira-code
-      nerd-fonts.jetbrains-mono
-      nerd-fonts.hack
-      nerd-fonts.sauce-code-pro
-      nerd-fonts.victor-mono
-      nerd-fonts.ubuntu-mono
+      pkgs.nerd-fonts.fira-code
+      pkgs.nerd-fonts.jetbrains-mono
+      pkgs.nerd-fonts.hack
+      pkgs.nerd-fonts.sauce-code-pro
+      pkgs.nerd-fonts.victor-mono
+      pkgs.nerd-fonts.ubuntu-mono
       
       # System fonts
-      dejavu_fonts
-      liberation_ttf
-      noto-fonts
-      noto-fonts-cjk-sans
-      noto-fonts-color-emoji
+      pkgs.dejavu_fonts
+      pkgs.liberation_ttf
+      pkgs.noto-fonts
+      pkgs.noto-fonts-cjk-sans
+      pkgs.noto-fonts-color-emoji
       
       # Professional presentation fonts
-      source-sans-pro
-      source-serif-pro
-      inter
+      pkgs.source-sans-pro
+      pkgs.source-serif-pro
+      pkgs.inter
     ];
     
     fontconfig = {

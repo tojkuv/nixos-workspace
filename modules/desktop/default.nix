@@ -58,16 +58,16 @@
   }];
 
   # Configure default applications and MIME types
-  environment.systemPackages = with pkgs; [
-    xdg-utils  # For xdg-open and other desktop integration tools
+  environment.systemPackages = [
+    pkgs.xdg-utils
   ];
 
   # Set up default applications
   xdg = {
     portal = {
       enable = true;
-      extraPortals = with pkgs; [
-        xdg-desktop-portal-gnome
+      extraPortals = [
+        pkgs.xdg-desktop-portal-gnome
       ];
     };
   };

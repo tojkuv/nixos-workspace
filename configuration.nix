@@ -38,15 +38,14 @@ in
     stateVersion = "25.05";
     configurationRevision = systemVersion;
     nixos.label = "dev-workstation-${systemVersion}";
-    
+
     autoUpgrade = {
       enable = false;
-      channel = "https://nixos.org/channels/nixos-unstable";
     };
   };
 
 
-  # Nix configuration
+  # Nix configuration - use flakes for reproducibility, disable channels
   nixpkgs.config = {
     allowUnfree = true;
     allowBroken = false;
@@ -54,7 +53,16 @@ in
 
   nix = {
     package = pkgs.nixVersions.stable;
-    
+
+    # Disable channels, rely on flakes for reproducibility
+    channel.enable = false;
+
+    # Set nixPath for legacy tools that need <nixpkgs>
+    nixPath = [
+      "nixpkgs=${pkgs.path}"
+      "nixos-config=/etc/nixos/configuration.nix"
+    ];
+
     settings = {
       experimental-features = [ "nix-command" "flakes" "auto-allocate-uids" "cgroups" ];
       auto-optimise-store = true;

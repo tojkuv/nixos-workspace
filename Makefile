@@ -1,4 +1,4 @@
-.PHONY: help rebuild switch test boot upgrade gc clean check diff adb-restart adb-devices adb-wireless adb-connect adb-disconnect android-studio android-build android-install android-build-install vnc-remmina vnc-tigervnc vnc-gnome-connections podman-prune podman-system-prune podman-volume-prune podman-image-prune
+.PHONY: help rebuild switch test boot upgrade gc clean check diff adb-restart adb-devices adb-wireless adb-connect adb-disconnect android-studio android-build android-install android-build-install vnc-remmina vnc-tigervnc vnc-gnome-connections podman-prune podman-system-prune podman-volume-prune podman-image-prune update-flake lock-flake
 
 SUDO_PASSWORD := unsecure
 SUDO := echo "$(SUDO_PASSWORD)" | sudo -S
@@ -6,15 +6,20 @@ SUDO := echo "$(SUDO_PASSWORD)" | sudo -S
 help:
 	@echo "=== NixOS Workstation Management ==="
 	@echo ""
-	@echo "Configuration Management:"
+	@echo "Configuration Management (Flake-based - Pinned nixpkgs):"
 	@echo "  make rebuild       - Rebuild and switch to new configuration"
 	@echo "  make switch        - Alias for rebuild"
 	@echo "  make test          - Build and test configuration (no boot entry)"
 	@echo "  make boot          - Build and set as next boot default (no switch)"
+	@echo "  make check         - Validate configuration syntax"
+	@echo "  make diff          - Show diff between current and new config"
+	@echo ""
+	@echo "Flake Management:"
+	@echo "  make update-flake  - Update flake inputs and rebuild"
+	@echo "  make lock-flake    - Update flake.lock without rebuilding"
 	@echo ""
 	@echo "Updates:"
-	@echo "  make upgrade       - Update channels and rebuild"
-	@echo "  make update-channels - Update nix channels only (no rebuild)"
+	@echo "  make upgrade       - Update flake inputs and rebuild"
 	@echo ""
 	@echo "Maintenance:"
 	@echo "  make gc            - Run garbage collection (remove old generations)"
@@ -54,36 +59,42 @@ help:
 	@echo "Admin Password: unsecure"
 
 rebuild:
-	@echo "=== Rebuilding NixOS Configuration ==="
-	@echo "This will rebuild and switch to the new configuration"
-	@cd $(PWD) && $(SUDO) nixos-rebuild switch -I nixos-config=$(PWD)/configuration.nix
+	@echo "=== Rebuilding NixOS Configuration (Flakes) ==="
+	@echo "Using flake.nix with pinned nixpkgs"
+	@cd $(PWD) && $(SUDO) nixos-rebuild switch --flake .#dev-workstation
 	@rm -f $(PWD)/result*
 
 switch: rebuild
 
 test:
-	@echo "=== Testing NixOS Configuration ==="
+	@echo "=== Testing NixOS Configuration (Flakes) ==="
 	@echo "Building configuration without creating boot entry"
-	@cd $(PWD) && $(SUDO) nixos-rebuild test -I nixos-config=$(PWD)/configuration.nix
+	@cd $(PWD) && nix build .#nixosConfigurations.dev-workstation.config.system.build.toplevel
 	@rm -f $(PWD)/result*
+	@echo "✓ Configuration test successful"
 
 boot:
-	@echo "=== Building Boot Configuration ==="
+	@echo "=== Building Boot Configuration (Flakes) ==="
 	@echo "Configuration will be active on next boot"
-	@cd $(PWD) && $(SUDO) nixos-rebuild boot -I nixos-config=$(PWD)/configuration.nix
+	@cd $(PWD) && $(SUDO) nixos-rebuild boot --flake .#dev-workstation
 	@rm -f $(PWD)/result*
 
 upgrade:
-	@echo "=== Upgrading NixOS Configuration ==="
-	@echo "Updating channels and rebuilding"
-	@$(SUDO) nix-channel --update
-	@cd $(PWD) && $(SUDO) nixos-rebuild switch --upgrade -I nixos-config=$(PWD)/configuration.nix
+	@echo "=== Upgrading NixOS Configuration (Flakes) ==="
+	@echo "Updating flake inputs and rebuilding"
+	@cd $(PWD) && $(SUDO) nix flake update
+	@cd $(PWD) && $(SUDO) nixos-rebuild switch --flake .#dev-workstation
 	@rm -f $(PWD)/result*
 
-update-channels:
-	@echo "=== Updating Nix Channels ==="
-	@$(SUDO) nix-channel --update
-	@echo "✓ Run 'make rebuild' to apply updates"
+update-flake:
+	@echo "=== Updating Flake Inputs ==="
+	@cd $(PWD) && nix flake update
+	@echo "✓ Flake inputs updated. Run 'make rebuild' to apply."
+
+lock-flake:
+	@echo "=== Locking Flake ==="
+	@cd $(PWD) && nix flake lock
+	@echo "✓ Flake.lock updated"
 
 gc:
 	@echo "=== Running Garbage Collection ==="
@@ -125,15 +136,15 @@ podman-image-prune:
 	@echo "✓ Podman images pruned"
 
 check:
-	@echo "=== Checking Configuration Syntax ==="
-	@cd $(PWD) && nixos-rebuild dry-build -I nixos-config=$(PWD)/configuration.nix
+	@echo "=== Checking Configuration Syntax (Flakes) ==="
+	@cd $(PWD) && nix build .#nixosConfigurations.dev-workstation.config.system.build.toplevel
 	@rm -f $(PWD)/result*
 	@echo "✓ Configuration syntax valid"
 
 diff:
-	@echo "=== Configuration Diff ==="
+	@echo "=== Configuration Diff (Flakes) ==="
 	@echo "Building new configuration..."
-	@cd $(PWD) && nixos-rebuild build -I nixos-config=$(PWD)/configuration.nix
+	@cd $(PWD) && nix build .#nixosConfigurations.dev-workstation.config.system.build.toplevel
 	@echo ""
 	@echo "Comparing with current system:"
 	@cd $(PWD) && nix store diff-closures /run/current-system ./result || echo "No differences or error occurred"

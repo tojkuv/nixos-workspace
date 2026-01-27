@@ -342,7 +342,7 @@ in
     gitlab-runner        # GitLab CI runner
     git-lfs             # Git Large File Storage
 
-    firebase-tools
+    # firebase-tools      # Removed: Incompatible with Node.js 24
 
     # ===== CODE EDITORS AND IDEs =====
     # Terminal editors
