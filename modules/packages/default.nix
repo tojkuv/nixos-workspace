@@ -209,10 +209,12 @@ in
      xorg.libXfixes
      libpulseaudio
 
-          # Wayland and audio development libraries for Bevy games
-          wayland
-          wayland-protocols
-          libxkbcommon
+           # Wayland and audio development libraries for Bevy games
+           wayland
+           wayland.dev
+           wayland-protocols
+           libxkbcommon
+           libxkbcommon.dev
            alsa-lib.dev
           xorg.xkbcomp
           xorg.setxkbmap
@@ -245,11 +247,14 @@ in
 
     # C/C++ development
     gcc                       # GNU Compiler Collection
+    clang                     # Clang compiler (required for LLD linker)
     cmake                     # Build system
     ninja                     # Build system
     gdb                       # GNU Debugger
     lldb                      # LLVM Debugger
     pkg-config               # Build system helper for library detection
+    lld                       # LLVM linker for faster Rust/C++ builds
+    mold                      # Ultra-fast linker (optional, even faster than lld)
 
     # System libraries for C/C++/Rust linking
     zlib                      # Compression library (libz.so.1)
@@ -258,11 +263,12 @@ in
     openssl                   # SSL/TLS library
     libffi                    # Foreign function interface library
     xorg.libX11               # X11 library
+    xorg.libX11.dev           # X11 headers and pkg-config
     xorg.libXcursor           # X11 cursor library
     xorg.libXi                # X11 input extension
     xorg.libXrandr            # X11 randr extension
     libxkbcommon             # Keyboard input library for Wayland/X11
-    wayland                   # Wayland protocol library
+    libxkbcommon.dev         # Keyboard input headers
 
     # ===== .NET 9 DEVELOPMENT ENVIRONMENT =====
     dotnet-sdk_9                           # Complete .NET 9 SDK with build tools, MSBuild, and NuGet
@@ -517,12 +523,17 @@ in
       nss
       pango
 
-      # Additional image and compression libraries
-      libjpeg
-      libpng
-      libtiff
-      libwebp
-      icu
-    ];
-  };
+       # Additional image and compression libraries
+       libjpeg
+       libpng
+       libtiff
+       libwebp
+       icu
+     ];
+   };
+
+   # Set PKG_CONFIG_PATH for development
+   environment.sessionVariables = {
+     PKG_CONFIG_PATH = "${pkgs.wayland.dev}/lib/pkgconfig:${pkgs.libxkbcommon.dev}/lib/pkgconfig";
+   };
 }

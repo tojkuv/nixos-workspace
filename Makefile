@@ -197,8 +197,8 @@ win11-rdp:
 		exit 1; \
 	fi; \
 	echo "Found VM at: $$VM_IP"; \
-	echo "Connecting with FreeRDP (Auto-Logon)..."; \
-	xfreerdp /v:$$VM_IP /u:tojku /p:unsecure /gfx:avc444 /rfx /sound /microphone /clipboard /dynamic-resolution /size:95% /cert:ignore /network:lan || \
+	echo "Connecting with FreeRDP (Interactive Password)..."; \
+	xfreerdp /v:$$VM_IP /u:tojku /gfx:avc444 /rfx /sound /microphone /clipboard /dynamic-resolution /size:95% /cert:ignore /network:lan || \
 	echo "Connection closed."
 
 win11-status:
