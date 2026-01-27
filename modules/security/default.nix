@@ -53,21 +53,6 @@
     allowUserNamespaces = true;
   };
 
-  nixpkgs.overlays = [
-    (final: prev: {
-      bitwarden-cli = throw "bitwarden-cli is BLOCKED for security reasons. Use Bitwarden GUI only.";
-      bw = throw "bw (Bitwarden CLI) is BLOCKED for security reasons. Use Bitwarden GUI only.";
-      rbw = throw "rbw (Bitwarden CLI) is BLOCKED for security reasons. Use Bitwarden GUI only.";
-      pass = throw "pass (password-store) CLI is BLOCKED for security reasons. Use GUI password manager only.";
-      gopass = throw "gopass CLI is BLOCKED for security reasons. Use GUI password manager only.";
-      keeper-cli = throw "keeper-cli is BLOCKED for security reasons. Use GUI password manager only.";
-      dashlane-cli = throw "dashlane-cli is BLOCKED for security reasons. Use GUI password manager only.";
-      pwgen = throw "pwgen is BLOCKED for security reasons. Use secure password generation in GUI tools only.";
-      keepassxc-cli = throw "keepassxc-cli is BLOCKED for security reasons. Use KeePassXC GUI only.";
-      password-store = throw "password-store (pass) is BLOCKED for security reasons.";
-    })
-  ];
-
   environment.sessionVariables = {
     BITWARDEN_CLI_DISABLED = "true";
     PASSWORD_STORE_DISABLED = "true";

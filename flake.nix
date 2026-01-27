@@ -9,6 +9,12 @@
     let
       systems = [ "x86_64-linux" "aarch64-linux" ];
       forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f system);
+
+      # Import custom overlays as a set
+      customOverlays = import ./overlays { inherit nixpkgs; };
+
+      # Convert overlay set to list for module import
+      overlayList = builtins.attrValues customOverlays;
     in
     {
       nixosConfigurations = {
@@ -16,9 +22,13 @@
           system = "x86_64-linux";
           modules = [
             ./configuration.nix
+            { nixpkgs.overlays = overlayList; }
           ];
         };
       };
+
+      # Expose overlays for external use as a set
+      overlays = customOverlays;
 
       # Development shell for nix development
       devShells = forAllSystems (system: {
