@@ -39,6 +39,9 @@ in
   # Enable GPU passthrough for Windows VM
   virtualisation.gpuPassthrough.enable = true;
 
+  # Enable Home Manager for user-level configuration
+  programs.home-manager.enable = true;
+
   # System metadata
   system = {
     stateVersion = "25.05";

@@ -197,6 +197,48 @@ optimize:
 	echo "✓ Nix store optimized"
 
 # =============================================================================
+# Home Manager
+# =============================================================================
+
+# Install Home Manager for the current user (via NixOS module)
+# Home Manager is integrated into the system config, run 'just rebuild' first
+hm-install:
+	@echo "=== Home Manager Installation ==="
+	@echo ""
+	@echo "Home Manager is now part of the NixOS system configuration."
+	@echo "Run 'just rebuild' to apply both system and user configurations."
+	@echo ""
+	@echo "The following Home Manager features are now enabled:"
+	@echo "  - Bash and Zsh integration with Starship prompt"
+	@echo "  - User environment variables"
+	@echo "  - User packages (ripgrep, fd, bat, delta, lazygit, etc.)"
+	@echo "  - XDG mimeapps configuration"
+	@echo ""
+	@echo "To update user configuration later, run: just rebuild"
+
+# Switch Home Manager configuration (via NixOS rebuild)
+hm-switch:
+	@echo "=== Switching Home Manager Configuration ==="
+	@echo "Use 'just rebuild' to apply Home Manager changes."
+
+# Build Home Manager configuration without switching (dry run)
+hm-build:
+	@echo "=== Building Home Manager Configuration ==="
+	@echo "Use 'just test' to test the full configuration including Home Manager."
+
+# Rollback Home Manager to previous generation
+hm-rollback:
+	@echo "=== Rolling Back Home Manager ==="
+	@echo "Use 'just rollback' to rollback both system and user configurations."
+
+# List Home Manager generations
+hm-generations:
+	@echo "=== Home Manager Generations ==="
+	nix-shell -p home-manager --run "home-manager generations"
+	@echo ""
+	@echo "System generations: just generations"
+
+# =============================================================================
 # Troubleshooting
 # =============================================================================
 
@@ -315,6 +357,13 @@ help:
 	@echo "  just gc-old        - Remove generations older than 30 days"
 	@echo "  just clean         - Clean build artifacts"
 	@echo "  just optimize      - Optimize nix store"
+	@echo ""
+	@echo "Home Manager:"
+	@echo "  just hm-install    - Install Home Manager for user"
+	@echo "  just hm-switch     - Switch Home Manager config"
+	@echo "  just hm-build      - Build Home Manager config (dry run)"
+	@echo "  just hm-rollback   - Rollback Home Manager"
+	@echo "  just hm-generations- List Home Manager generations"
 	@echo ""
 	@echo "Diagnostics:"
 	@echo "  just generations   - List all system generations"

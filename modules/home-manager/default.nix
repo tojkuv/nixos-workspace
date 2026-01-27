@@ -31,8 +31,16 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    # Home Manager requiresflakes and nix-command
+    # Home Manager requires flakes and nix-command
     nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
+    # Home Manager configuration
+    home-manager = {
+      useUserPackages = true;
+      useGlobalPkgs = true;
+      backupFileExtension = "backup";
+      users.tojkuv = import ./home.nix;
+    };
 
     # Create user directories for Home Manager
     users.users.tojkuv.home = "/home/tojkuv";
@@ -51,19 +59,21 @@ in
           exit 1
         fi
 
-        nix-shell -p home-manager --run "home-manager switch"
+        # First time install - use backup mode to handle existing files
+        nix-shell -p home-manager --run "home-manager switch -b backup"
 
         echo "Home Manager installed successfully!"
         echo "Your dotfiles and user configuration are now managed by Home Manager."
+        echo "Existing files were backed up with '.backup' extension."
       '')
     ];
 
-    # Symlink system-wide files to user home (fallback for non-Home-Manager users)
-    # These are managed by Home Manager when enabled
-    environment.etc = {
-      "bashrc".source = lib.mkIf cfg.enableBashIntegration (lib.mkDefault "/home/tojkuv/.bashrc");
-      "zshrc".source = lib.mkIf cfg.enableZshIntegration (lib.mkDefault "/home/tojkuv/.zshrc");
-      "profile".source = lib.mkIf cfg.enableBashIntegration (lib.mkDefault "/home/tojkuv/.profile");
+    # Remove symlinks to user config files (now managed by Home Manager)
+    # This prevents conflicts between system /etc and user ~/.config
+    environment.etc = lib.mkIf cfg.enableBashIntegration {
+      "profile".source = lib.mkDefault "/home/tojkuv/.profile";
+    } // lib.mkIf cfg.enableZshIntegration {
+      "zshrc".source = lib.mkDefault "/home/tojkuv/.zshrc";
     };
 
     # Provide guidance on using Home Manager
@@ -71,7 +81,7 @@ in
       ''
         Home Manager is enabled.
         Run 'install-home-manager' as user 'tojkuv' to install Home Manager.
-        Then use 'home-manager switch' to apply user configuration.
+        Existing files will be backed up with '.backup' extension.
       ''
     ];
   };

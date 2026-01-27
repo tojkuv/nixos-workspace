@@ -10,7 +10,6 @@
     username = "tojkuv";
     homeDirectory = "/home/tojkuv";
     stateVersion = "25.05";
-    profileDirectory = ".profile";
   };
 
   # Disable version mismatch warning (we use unstable nixpkgs)
@@ -148,6 +147,6 @@
     "text/x-shellscript" = [ "nvim.desktop" ];
   };
 
-  # Disable i18n to avoid fcitx5 package issues
-  i18n.inputMethod.enabled = "none";
+  # Disable i18n input method to avoid fcitx5 package issues
+  i18n.inputMethod.enable = lib.mkDefault false;
 }
