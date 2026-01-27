@@ -4,32 +4,27 @@
 { config, pkgs, lib, ... }:
 
 {
-  # Desktop environment
-  services.xserver = {
-    enable = true;
+  services = {
+    xserver = {
+      enable = true;
 
-    xkb = {
-      layout = "us";
-      variant = "";
+      xkb = {
+        layout = "us";
+        variant = "";
+      };
+
+      videoDrivers = [ "amdgpu" ];
     };
 
-    # Video drivers - AMD as primary for system stability (Option A)
-    videoDrivers = [ "amdgpu" ];
-    
-    
+    displayManager.gdm.enable = true;
+    desktopManager.gnome.enable = true;
 
-  };
+    gnome = {
+      gnome-keyring.enable = true;
+      sushi.enable = true;
 
-  # Display and desktop managers
-  services.displayManager.gdm.enable = true;
-  services.desktopManager.gnome.enable = true;
-
-  services.gnome = {
-    gnome-keyring.enable = true;
-    sushi.enable = true;
-
-    # Configure GNOME settings
-    gnome-settings-daemon.enable = true;
+      gnome-settings-daemon.enable = true;
+    };
   };
 
   # Set Chromium as default browser in GNOME

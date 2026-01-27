@@ -15,9 +15,7 @@ in
 {
   nixpkgs = (builtins.removeAttrs nixpkgsData ["type"]) // {
     outPath = fetchNixpkgs {
-      revision = nixpkgsData.revision;
-      url = nixpkgsData.url;
-      sha256 = nixpkgsData.sha256;
+      inherit (nixpkgsData) revision url sha256;
     };
   };
 }

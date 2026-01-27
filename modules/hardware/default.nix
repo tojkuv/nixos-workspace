@@ -87,7 +87,15 @@
       cpuFreqGovernor = lib.mkDefault "ondemand";
     };
 
-    boot.kernelModules = [ "vhci-hcd" "usbip_core" "usbip_host" ];
+    boot = {
+      kernelModules = [ "vhci-hcd" "usbip_core" "usbip_host" ];
+      kernel.sysctl = {
+        "dev.i915.perf_stream_paranoid" = "0";
+      };
+      kernelParams = lib.mkIf config.virtualisation.gpuPassthrough.enable [
+        "vfio-pci.ids=10de:2560,10de:228e,100de:1638"
+      ];
+    };
 
     services.udev.packages = [
       pkgs.usbutils
@@ -98,14 +106,6 @@
         SUBSYSTEM=="usb", GROUP="libvirtd", MODE="0664"
         SUBSYSTEM=="usb_device", GROUP="libvirtd", MODE="0664"
       '')
-    ];
-
-    boot.kernel.sysctl = {
-      "dev.i915.perf_stream_paranoid" = "0";
-    };
-
-    boot.kernelParams = lib.mkIf config.virtualisation.gpuPassthrough.enable [
-      "vfio-pci.ids=10de:2560,10de:228e,1002:1638"
     ];
   };
 }

@@ -5,36 +5,35 @@
 
 {
 
-  # Enable libvirt for VM management
-  virtualisation.libvirtd = {
-    enable = true;
-    qemu = {
-      package = pkgs.qemu_kvm;
-      runAsRoot = true;
-      swtpm.enable = true;
-      verbatimConfig = ''
-        user = "root"
-        group = "root"
-      '';
+  virtualisation = {
+    libvirtd = {
+      enable = true;
+      qemu = {
+        package = pkgs.qemu_kvm;
+        runAsRoot = true;
+        swtpm.enable = true;
+        verbatimConfig = ''
+          user = "root"
+          group = "root"
+        '';
+      };
+
+      onBoot = "ignore";
+      onShutdown = "shutdown";
     };
 
-    onBoot = "ignore";
-    onShutdown = "shutdown";
+    gpuPassthrough.enable = lib.mkDefault false;
+
+    spiceUSBRedirection.enable = true;
+
+    podman = {
+      enable = true;
+      dockerCompat = true;
+      defaultNetwork.settings.dns = ["8.8.8.8"];
+    };
   };
 
-  # GPU passthrough configuration (disabled by default for safety)
-  virtualisation.gpuPassthrough.enable = lib.mkDefault false;
-
-    # Enable SPICE for enhanced VM experience
-  virtualisation.spiceUSBRedirection.enable = true;
   services.spice-vdagentd.enable = true;
-
-  # Container orchestration with Podman
-  virtualisation.podman = {
-    enable = true;
-    dockerCompat = true;
-    defaultNetwork.settings.dns = ["8.8.8.8"];
-  };
 
   # Groups for VM and USB access
   users.groups = {

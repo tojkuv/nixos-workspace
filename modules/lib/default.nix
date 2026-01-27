@@ -130,17 +130,13 @@ in
         ) (module.options or { }))
       ) { } modules;
 
-      duplicates = lib.genAttrs (lib.attrNames (lib.groupBy (opt:
+      duplicates = builtins.groupBy (opt:
         lib.concatStringsSep ":" (lib.init (lib.splitString ":" opt))
-      ) (lib.attrNames allOptions))) (key:
-        lib.head (lib.getAttr key (lib.groupBy (opt:
-          lib.concatStringsSep ":" (lib.init (lib.splitString ":" opt))
-        ) (lib.attrNames allOptions)))
-      );
+      ) (lib.attrNames allOptions);
 
-      duplicatesList = lib.attrNames (lib.filter (count: count > 1) (lib.mapAttrs (name: value: lib.length value) (lib.groupBy (opt:
+      duplicatesList = lib.attrNames (lib.filter (count: count > 1) (builtins.groupBy (opt:
         lib.concatStringsSep ":" (lib.init (lib.splitString ":" opt))
-      ) (lib.attrNames allOptions))));
+      ) (lib.attrNames allOptions)));
 
       result = if duplicatesList == [ ] then [ ] else duplicatesList;
     in

@@ -11,7 +11,7 @@
 
 let
   # Version and metadata management
-  systemVersion = "2025.09.04-no-home-manager";
+  systemVersion = "2025.09.04-with-home-manager";
   developmentEnvironment = "dev-unstable";
 in
 
@@ -33,6 +33,7 @@ in
     ./modules/packages
     ./modules/programs
     ./modules/environment
+    ./modules/home-manager
   ];
 
   # Enable GPU passthrough for Windows VM

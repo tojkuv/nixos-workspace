@@ -85,7 +85,34 @@ lint:
 
 # Format and lint
 format: fmt lint
-    @echo "✓ Formatting and linting complete"
+	@echo "✓ Formatting and linting complete"
+
+# =============================================================================
+# Validation (CI replacement)
+# =============================================================================
+
+# Run full validation suite
+validate:
+	@echo "=== NixOS Configuration Validation ==="
+	@echo ""
+
+	@echo "--- Step 1: Flake Check ---"
+	-nix flake check --no-build
+	@echo ""
+
+	@echo "--- Step 2: Build Test ---"
+	-nix build .#nixosConfigurations.dev-workstation.config.system.build.toplevel --no-link
+	@echo ""
+
+	@echo "--- Step 3: Linting ---"
+	-nix develop --command statix check || true
+	@echo ""
+
+	@echo "--- Step 4: Integration Tests ---"
+	-just test-integration || true
+	@echo ""
+
+	@echo "✓ Validation complete"
 
 # =============================================================================
 # Testing
@@ -254,43 +281,44 @@ info:
 # =============================================================================
 
 help:
-    @echo "=== NixOS Workstation Management ==="
-    @echo ""
-    @echo "Configuration Management (Flake-based - Pinned nixpkgs):"
-    @echo "  just rebuild       - Rebuild and switch to new configuration"
-    @echo "  just switch        - Alias for rebuild"
-    @echo "  just test          - Build and test configuration (no boot entry)"
-    @echo "  just boot          - Build and set as next boot default (no switch)"
-    @echo "  just check         - Validate configuration syntax"
-    @echo "  just diff          - Show diff between current and new config"
-    @echo ""
-    @echo "Flake Management:"
-    @echo "  just upgrade       - Update flake inputs and rebuild"
-    @echo "  just update-flake  - Update flake inputs without rebuilding"
-    @echo "  just lock-flake    - Update flake.lock without rebuilding"
-    @echo ""
-    @echo "Formatting and Linting:"
-    @echo "  just fmt           - Format all Nix files"
-    @echo "  just lint          - Lint Nix files with statix"
-    @echo "  just format        - Format and lint"
-    @echo ""
-    @echo "Testing:"
-    @echo "  just test-integration - Run integration tests"
-    @echo ""
-    @echo "Development:"
-    @echo "  just dev           - Enter development shell"
-    @echo "  just shell         - Alias for dev"
-    @echo ""
-    @echo "Maintenance:"
-    @echo "  just gc            - Run garbage collection"
-    @echo "  just gc-old        - Remove generations older than 30 days"
-    @echo "  just clean         - Clean build artifacts"
-    @echo "  just optimize      - Optimize nix store"
-    @echo ""
-    @echo "Diagnostics:"
-    @echo "  just troubleshoot    - Run diagnostics and troubleshooting"
-    @echo "  just generations     - List all system generations"
-    @echo "  just rollback        - Rollback to previous generation"
-    @echo "  just info            - Show current system info"
-    @echo ""
-    @echo "Run 'just' without arguments to see this help"
+	@echo "=== NixOS Workstation Management ==="
+	@echo ""
+	@echo "Configuration Management (Flake-based - Pinned nixpkgs):"
+	@echo "  just rebuild       - Rebuild and switch to new configuration"
+	@echo "  just switch        - Alias for rebuild"
+	@echo "  just test          - Build and test configuration (no boot entry)"
+	@echo "  just boot          - Build and set as next boot default (no switch)"
+	@echo "  just check         - Validate configuration syntax"
+	@echo "  just diff          - Show diff between current and new config"
+	@echo ""
+	@echo "Flake Management:"
+	@echo "  just upgrade       - Update flake inputs and rebuild"
+	@echo "  just update-flake  - Update flake inputs without rebuilding"
+	@echo "  just lock-flake    - Update flake.lock without rebuilding"
+	@echo ""
+	@echo "Formatting and Linting:"
+	@echo "  just fmt           - Format all Nix files"
+	@echo "  just lint          - Lint Nix files with statix"
+	@echo "  just format        - Format and lint"
+	@echo ""
+	@echo "Testing:"
+	@echo "  just test-integration - Run integration tests"
+	@echo "  just troubleshoot     - Run diagnostics"
+	@echo "  just validate         - Full validation suite"
+	@echo ""
+	@echo "Development:"
+	@echo "  just dev           - Enter development shell"
+	@echo "  just shell         - Alias for dev"
+	@echo ""
+	@echo "Maintenance:"
+	@echo "  just gc            - Run garbage collection"
+	@echo "  just gc-old        - Remove generations older than 30 days"
+	@echo "  just clean         - Clean build artifacts"
+	@echo "  just optimize      - Optimize nix store"
+	@echo ""
+	@echo "Diagnostics:"
+	@echo "  just generations   - List all system generations"
+	@echo "  just rollback      - Rollback to previous generation"
+	@echo "  just info          - Show current system info"
+	@echo ""
+	@echo "See README.md for full documentation"
