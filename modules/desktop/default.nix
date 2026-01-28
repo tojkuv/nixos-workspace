@@ -1,7 +1,12 @@
 # Desktop Environment Configuration Module
 # Handles X11, display managers, and desktop environment
 
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 {
   services = {
@@ -13,7 +18,7 @@
         variant = "";
       };
 
-      videoDrivers = [ "amdgpu" ];
+      videoDrivers = lib.mkIf (!config.hardware.hybridGraphics.enable) [ "amdgpu" ];
     };
 
     displayManager.gdm.enable = true;
@@ -28,29 +33,31 @@
   };
 
   # Set Chromium as default browser in GNOME
-  programs.dconf.profiles.user.databases = [{
-    settings = {
-      "org/gnome/desktop/applications/browser" = {
-        exec = "chromium";
-        needs-terminal = false;
+  programs.dconf.profiles.user.databases = [
+    {
+      settings = {
+        "org/gnome/desktop/applications/browser" = {
+          exec = "chromium";
+          needs-terminal = false;
+        };
+        "org/gnome/desktop/url-handlers/http" = {
+          enabled = true;
+          exec = "chromium %s";
+          needs-terminal = false;
+        };
+        "org/gnome/desktop/url-handlers/https" = {
+          enabled = true;
+          exec = "chromium %s";
+          needs-terminal = false;
+        };
+        "org/gnome/desktop/url-handlers/about" = {
+          enabled = true;
+          exec = "chromium %s";
+          needs-terminal = false;
+        };
       };
-      "org/gnome/desktop/url-handlers/http" = {
-        enabled = true;
-        exec = "chromium %s";
-        needs-terminal = false;
-      };
-      "org/gnome/desktop/url-handlers/https" = {
-        enabled = true;
-        exec = "chromium %s";
-        needs-terminal = false;
-      };
-      "org/gnome/desktop/url-handlers/about" = {
-        enabled = true;
-        exec = "chromium %s";
-        needs-terminal = false;
-      };
-    };
-  }];
+    }
+  ];
 
   # Configure default applications and MIME types
   environment.systemPackages = [

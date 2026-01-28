@@ -36,8 +36,15 @@ in
     ./modules/home-manager
   ];
 
-  # Enable GPU passthrough for Windows VM
-  virtualisation.gpuPassthrough.enable = true;
+  # GPU passthrough disabled - using host rendering for game development
+  virtualisation.gpuPassthrough.enable = false;
+
+  # Hybrid graphics: AMD integrated primary, NVIDIA available for offload
+  hardware.hybridGraphics = {
+    enable = true;
+    nvidiaBusId = "PCI:1@0:0:0";
+    amdgpuBusId = "PCI:6@0:0:0";
+  };
 
   # Enable Home Manager for user-level configuration
   programs.home-manager.enable = true;

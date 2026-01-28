@@ -2,13 +2,16 @@
 # Centralized management of all session environment variables
 # Uses environment.sessionVariables to ensure variables are available in user sessions
 
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 {
   environment.sessionVariables = {
-    # GPU and Graphics Configuration
-    DRI_PRIME = "1";
-    __GLX_VENDOR_LIBRARY_NAME = "mesa";
+    # GPU and Graphics Configuration (controlled by hardware module for hybrid GPU)
     MESA_LOADER_DRIVER_OVERRIDE = "radeonsi";
     EGL_PLATFORM = "wayland";
 

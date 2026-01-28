@@ -1,10 +1,15 @@
 # Browser Configuration Module
 # Handles browser packages and settings
 
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 {
-  # Browser-specific packages
+  # Browser-specific packages and CLI tools
   environment.systemPackages = [
     pkgs.firefox-devedition
   ];
@@ -23,4 +28,16 @@
       enable = true;
     };
   };
+
+  # Add OpenCode to PATH for all users (login shells)
+  environment.etc."profile.local".text = ''
+    # OpenCode PATH
+    export PATH="$HOME/.opencode/bin:$PATH"
+  '';
+
+  # Add OpenCode to PATH for interactive non-login shells
+  environment.etc."bashrc.local".text = ''
+    # OpenCode PATH
+    export PATH="$HOME/.opencode/bin:$PATH"
+  '';
 }

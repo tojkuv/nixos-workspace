@@ -1,9 +1,33 @@
 # Hardware Configuration Module
 # Handles graphics, CPU, Bluetooth, power management, and GPU passthrough
 
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 {
+  options.hardware.hybridGraphics = lib.mkOption {
+    description = "Hybrid graphics configuration (AMD integrated primary, NVIDIA available for offload)";
+    type = lib.types.submodule {
+      options = {
+        enable = lib.mkEnableOption "hybrid graphics with AMD primary and NVIDIA offload";
+        nvidiaBusId = lib.mkOption {
+          type = lib.types.str;
+          default = "PCI:1@0:0:0";
+          description = "NVIDIA GPU bus ID (find with: lspci | grep -i nvidia)";
+        };
+        amdgpuBusId = lib.mkOption {
+          type = lib.types.str;
+          default = "PCI:0@0:1:0";
+          description = "AMD GPU bus ID (find with: lspci | grep -i amd)";
+        };
+      };
+    };
+  };
+
   options.virtualisation.gpuPassthrough = lib.mkOption {
     description = "GPU passthrough configuration for virtualization";
     type = lib.types.submodule {
@@ -52,13 +76,17 @@
           pkgs.mesa
           pkgs.libva-vdpau-driver
           pkgs.libvdpau-va-gl
-        ] ++ lib.optionals (config.services.xserver.videoDrivers or [] == [ "nvidia" ] && !config.virtualisation.gpuPassthrough.enable) [
-          pkgs.nvidia-vaapi-driver
+          pkgs.vulkan-tools
         ];
       };
 
-      nvidia = lib.mkIf (!config.virtualisation.gpuPassthrough.enable && config.services.xserver.videoDrivers or [] == [ "nvidia" ]) {
-        package = config.boot.kernelPackages.nvidiaPackages.stable;
+      nvidia = {
+        modesetting.enable = true;
+        prime.reverseSync.enable = config.hardware.hybridGraphics.enable;
+        prime.amdgpuBusId = config.hardware.hybridGraphics.amdgpuBusId;
+        prime.nvidiaBusId = config.hardware.hybridGraphics.nvidiaBusId;
+        prime.offload.enableOffloadCmd = true;
+        videoAcceleration = true;
       };
 
       cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
@@ -76,6 +104,20 @@
       };
     };
 
+    environment.sessionVariables = lib.mkIf config.hardware.hybridGraphics.enable {
+      DRI_PRIME = "1";
+    };
+
+    environment.systemPackages = lib.mkIf config.hardware.hybridGraphics.enable [
+      (pkgs.writeShellScriptBin "nvidia-offload" ''
+        export __NV_PRIME_RENDER_OFFLOAD=1
+        export __NV_PRIME_RENDER_OFFLOAD_PROVIDER=NVIDIA-G0
+        export __GLX_VENDOR_LIBRARY_NAME=nvidia
+        export __VK_LAYER_NV_optimus=NVIDIA_only
+        exec "$@"
+      '')
+    ];
+
     zramSwap = {
       enable = true;
       algorithm = "zstd";
@@ -88,7 +130,11 @@
     };
 
     boot = {
-      kernelModules = [ "vhci-hcd" "usbip_core" "usbip_host" ];
+      kernelModules = [
+        "vhci-hcd"
+        "usbip_core"
+        "usbip_host"
+      ];
       kernel.sysctl = {
         "dev.i915.perf_stream_paranoid" = "0";
       };

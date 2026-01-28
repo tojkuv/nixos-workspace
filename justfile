@@ -309,14 +309,28 @@ rollback:
 
 # Show current system info
 info:
-    @echo "=== Current System Info ==="
-    nixos-version
-    echo ""
-    echo "Configuration file: $(pwd)/configuration.nix"
-    echo "Hardware config: $(pwd)/hardware-configuration.nix"
-    echo ""
-    echo "Modules:"
-    ls -1 modules/
+	@echo "=== Current System Info ==="
+	nixos-version
+	echo ""
+	echo "Configuration file: $(pwd)/configuration.nix"
+	echo "Hardware config: $(pwd)/hardware-configuration.nix"
+	echo ""
+	echo "Modules:"
+	ls -1 modules/
+
+# Show GPU bus IDs for hybrid graphics configuration
+gpu-busids:
+	@echo "=== GPU Bus IDs ==="
+	@echo ""
+	@echo "All GPUs detected:"
+	lspci | grep -iE 'vga|3d'
+	@echo ""
+	@echo "NVIDIA Bus ID format for nix: PCI:<bus>@0:0:0"
+	@echo "AMD Bus ID format for nix: PCI:<bus>@0:0:0"
+	@echo ""
+	@echo "Example values for configuration.nix:"
+	@echo "  nvidiaBusId = \"PCI:1@0:0:0\";"
+	@echo "  amdgpuBusId = \"PCI:6@0:0:0\";"
 
 # =============================================================================
 # Help
@@ -369,5 +383,10 @@ help:
 	@echo "  just generations   - List all system generations"
 	@echo "  just rollback      - Rollback to previous generation"
 	@echo "  just info          - Show current system info"
+	@echo "  just gpu-busids    - Show GPU bus IDs for hybrid graphics"
+	@echo ""
+	@echo "Hybrid Graphics:"
+	@echo "  AMD iGPU is primary (power efficient)"
+	@echo "  Use 'nvidia-offload <command>' for NVIDIA GPU"
 	@echo ""
 	@echo "See README.md for full documentation"
