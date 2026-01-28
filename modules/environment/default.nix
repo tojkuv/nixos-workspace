@@ -12,7 +12,6 @@
 {
   environment.sessionVariables = {
     # GPU and Graphics Configuration (controlled by hardware module for hybrid GPU)
-    MESA_LOADER_DRIVER_OVERRIDE = "radeonsi";
     EGL_PLATFORM = "wayland";
 
     # Firefox Wayland optimizations
@@ -41,5 +40,10 @@
     PASSWORD_STORE_DISABLED = "true";
     GOPASS_DISABLED = "true";
     ENTERPRISE_SECURITY_POLICY = "CLI_PASSWORD_MANAGERS_DISABLED";
+  }
+  // lib.optionalAttrs config.hardware.hybridGraphics.enable {
+    # Only set MESA_LOADER_DRIVER_OVERRIDE when using hybrid graphics
+    # Set to "radeonsi" for AMD driver, or leave unset for auto-detection
+    MESA_LOADER_DRIVER_OVERRIDE = "radeonsi";
   };
 }

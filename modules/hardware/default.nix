@@ -24,6 +24,11 @@
           default = "PCI:0@0:1:0";
           description = "AMD GPU bus ID (find with: lspci | grep -i amd)";
         };
+        sessionVariables = lib.mkOption {
+          type = lib.types.bool;
+          default = true;
+          description = "Set system-wide GPU session variables (DRI_PRIME, etc.). Set to false to allow per-shell control via flake.nix/.envrc";
+        };
       };
     };
   };
@@ -72,21 +77,17 @@
         enable = true;
         enable32Bit = true;
 
-        extraPackages = [
-          pkgs.mesa
-          pkgs.libva-vdpau-driver
-          pkgs.libvdpau-va-gl
-          pkgs.vulkan-tools
+        extraPackages = with pkgs; [
+          mesa
+          libva-vdpau-driver
+          libvdpau-va-gl
+          vulkan-tools
+          vulkan-loader
         ];
       };
 
-      nvidia = {
-        modesetting.enable = true;
-        prime.reverseSync.enable = config.hardware.hybridGraphics.enable;
-        prime.amdgpuBusId = config.hardware.hybridGraphics.amdgpuBusId;
-        prime.nvidiaBusId = config.hardware.hybridGraphics.nvidiaBusId;
-        prime.offload.enableOffloadCmd = true;
-        videoAcceleration = true;
+      nvidia = lib.mkIf (config.services.xserver.videoDrivers or [ ] == [ "nvidia" ]) {
+        package = config.boot.kernelPackages.nvidiaPackages.stable;
       };
 
       cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
@@ -104,9 +105,17 @@
       };
     };
 
-    environment.sessionVariables = lib.mkIf config.hardware.hybridGraphics.enable {
-      DRI_PRIME = "1";
-    };
+    environment.sessionVariables = lib.mkMerge [
+      (lib.mkIf config.hardware.hybridGraphics.enable {
+        DRI_PRIME = "1";
+      })
+      (lib.mkIf (config.hardware.hybridGraphics.enable && config.hardware.hybridGraphics.sessionVariables)
+        {
+          __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+          VK_ICD_FILENAMES = "/run/opengl-driver/share/vulkan/icd.d/nvidia_icd.x86_64.json";
+        }
+      )
+    ];
 
     environment.systemPackages = lib.mkIf config.hardware.hybridGraphics.enable [
       (pkgs.writeShellScriptBin "nvidia-offload" ''

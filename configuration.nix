@@ -27,13 +27,14 @@ in
     ./modules/services
     ./modules/security
     ./modules/virtualisation
-    ./modules/hardware
     ./modules/desktop
     ./modules/fonts
     ./modules/packages
     ./modules/programs
     ./modules/environment
     ./modules/home-manager
+    # Hardware module must come after desktop to ensure xserver.videoDrivers is set
+    ./modules/hardware
   ];
 
   # GPU passthrough disabled - using host rendering for game development
@@ -44,7 +45,12 @@ in
     enable = true;
     nvidiaBusId = "PCI:1@0:0:0";
     amdgpuBusId = "PCI:6@0:0:0";
+    # Enable system-wide GPU variables for NVIDIA driver
+    sessionVariables = true;
   };
+
+  # RTX 3060 (Turing+) requires open kernel modules for driver >= 560
+  hardware.nvidia.open = true;
 
   # Enable Home Manager for user-level configuration
   programs.home-manager.enable = true;

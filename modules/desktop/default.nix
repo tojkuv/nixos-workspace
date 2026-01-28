@@ -18,7 +18,10 @@
         variant = "";
       };
 
-      videoDrivers = lib.mkIf (!config.hardware.hybridGraphics.enable) [ "amdgpu" ];
+      videoDrivers = [
+        "amdgpu"
+        "nvidia"
+      ];
     };
 
     displayManager.gdm.enable = true;
